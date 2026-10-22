@@ -19,7 +19,7 @@ S = 4  # trace at 4x the source resolution for smooth curves
 OUT = os.path.join(os.path.dirname(__file__), '..', 'public', 'brand')
 
 im = Image.open(SRC).convert('L')
-big = im.resize((im.width * S, im.height * S), Image.LANCZOS).filter(ImageFilter.GaussianBlur(S * 0.5))
+big = im.resize((im.width * S, im.height * S), Image.LANCZOS).filter(ImageFilter.GaussianBlur(S * 1.0))
 mask = np.array(big) > 128
 H, W = mask.shape
 ys, xs = np.mgrid[0:H, 0:W]
@@ -77,7 +77,7 @@ def trace(m):
     y0, x0 = yy.min() - 4, xx.min() - 4
     crop = m[y0:yy.max() + 5, x0:xx.max() + 5]
     bmp = potrace.Bitmap(~crop)
-    plist = bmp.trace(turdsize=600, turnpolicy=potrace.POTRACE_TURNPOLICY_MINORITY, alphamax=1.1, opticurve=True, opttolerance=1.0)
+    plist = bmp.trace(turdsize=1800, turnpolicy=potrace.POTRACE_TURNPOLICY_MINORITY, alphamax=1.15, opticurve=True, opttolerance=0.8)
     f = lambda p: f'{(p.x + x0) / S:.1f} {(p.y + y0) / S:.1f}'
     parts = []
     for curve in plist:

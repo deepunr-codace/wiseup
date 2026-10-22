@@ -32,8 +32,8 @@ const hex = (n: number) => Math.round(n).toString(16).padStart(2, '0');
 const mix = (a: [number, number, number], b: [number, number, number], t: number) =>
   `#${hex(a[0] + (b[0] - a[0]) * t)}${hex(a[1] + (b[1] - a[1]) * t)}${hex(a[2] + (b[2] - a[2]) * t)}`;
 
-const DEPTH = 28;          // number of stacked layers
-const STEP = 0.9;          // svg units between layers
+const DEPTH = 42;          // number of stacked layers
+const STEP = 0.6;          // svg units between layers
 // Sides are dark, never light grey: the pure white face reads against them, with no white haze.
 const NEAR: [number, number, number] = [92, 96, 102];
 const FAR: [number, number, number] = [8, 10, 12];
