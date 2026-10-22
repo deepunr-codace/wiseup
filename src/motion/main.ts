@@ -152,8 +152,8 @@ function heroArt() {
       type P = { x: number; y: number; r: number; vy: number; sway: number; ph: number; a: number; c: string };
       let w = 0, h = 0, dpr = 1;
       let parts: P[] = [];
-      // Palette swatches (brand strip), lighter ones so they read on black.
-      const COLORS = ['3,114,140', '20,135,151', '39,142,139', '47,133,122'];
+      // Neutral dust motes: the hero is a dark stage lit by white light.
+      const COLORS = ['255,255,255', '235,240,245', '210,220,230', '255,255,255'];
       const make = (rand: boolean): P => {
         const x = Math.random();
         // left half cool, right half warm, a few of either anywhere
