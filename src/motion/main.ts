@@ -116,42 +116,99 @@ function themeToggle() {
 }
 
 /* ------------------------------------------------------------------ *
- * Hero wordmark: the inline SVG from scripts/make-hero-wordmark.mjs holds one <path> per letter
- * (.hero-logo__ch) plus a duplicate outline (.hero-logo__sheen) painted with a moving gradient.
- * Letters cascade up out of a soft blur, tightly staggered; once they've mostly settled, the
- * sheen's gradient is swept across the glyphs by hand (gradientTransform isn't animatable through
- * CSS, so a plain tween drives the attribute directly) for one premium light-catch moment.
+ * Hero wordmark: the brush logo inlined from scripts/make-brush-wordmark.py, one <path> per letter
+ * (.hero-logo__ch, data-ch="w|i|s|e|u|p"). Each letter is painted on by a diagonal wipe that follows
+ * the brush slant, then settles into its own idle motion (the W rocks, the i hops, the s sways, the e
+ * and U float against each other, the p swings like a pendulum). A shared, iridescent colour band
+ * flows through the whole word (one gradient in word space, so it crosses letter by letter), and
+ * hovering a letter springs it up with a glow in that letter's own colour.
  * ------------------------------------------------------------------ */
+const LETTER_GLOW: Record<string, string> = { w: '#46e6d4', i: '#ffa04a', s: '#4aa8ff', e: '#7dff9a', u: '#c084ff', p: '#ff7a59' };
+
 function heroWordmark() {
   onPage(({ intro }) => {
     const wrap = document.querySelector<HTMLElement>('[data-wordmark]');
-    const svg = wrap?.querySelector('svg');
+    const svg = wrap?.querySelector<SVGSVGElement>('svg');
+    const group = wrap?.querySelector<SVGGElement>('.hero-logo__chars');
     const chars = wrap?.querySelectorAll<SVGPathElement>('.hero-logo__ch');
-    const sheen = wrap?.querySelector<SVGGElement>('.hero-logo__sheen');
-    const sheenGrad = wrap?.querySelector<SVGLinearGradientElement>('#hero-logo-sheen');
-    if (!wrap || !svg || !chars?.length || prefersReducedMotion()) return;
+    if (!wrap || !svg || !group || !chars?.length || prefersReducedMotion()) return;
     gsap.set(wrap, { visibility: 'visible' });
-    const width = svg.viewBox.baseVal.width || svg.clientWidth;
+    const letters = gsap.utils.toArray<SVGPathElement>(chars);
+    const by = (ch: string) => letters.find((l) => l.dataset.ch === ch)!;
 
-    const tl = gsap.timeline({ paused: true });
-    tl.from(chars, { yPercent: 65, scale: 1.1, autoAlpha: 0, filter: 'blur(14px)', duration: 1, stagger: 0.07, ease: ease.out }, 0);
-    if (sheen && sheenGrad) {
-      const sweep = { x: -width * 0.5 };
-      tl.to(sheen, { autoAlpha: 1, duration: 0.01 }, 0.5)
-        .to(sweep, {
-          x: width * 1.3,
-          duration: 1.1,
-          ease: ease.inOut,
-          onUpdate: () => sheenGrad.setAttribute('gradientTransform', `translate(${sweep.x} 0)`),
-        }, 0.55)
-        .to(sheen, { autoAlpha: 0, duration: 0.4 }, '-=0.25');
-    }
-    // Once the entrance has landed, the letters keep a small, staggered bounce (the boy on the "i"
-    // dot rides along with his letter).
-    tl.add(() => {
-      gsap.to(chars, { y: -5, duration: 1.1, ease: 'sine.inOut', yoyo: true, repeat: -1, stagger: 0.14 });
+    // Iridescent colour band: mostly white with a teal > blue > orange glint that keeps travelling.
+    const vb = svg.viewBox.baseVal;
+    const NS = 'http://www.w3.org/2000/svg';
+    const grad = document.createElementNS(NS, 'linearGradient');
+    grad.id = 'hero-brush-flow';
+    grad.setAttribute('gradientUnits', 'userSpaceOnUse');
+    grad.setAttribute('spreadMethod', 'repeat');
+    grad.setAttribute('x1', String(vb.x)); grad.setAttribute('y1', String(vb.y + vb.height));
+    grad.setAttribute('x2', String(vb.x + vb.width * 0.8)); grad.setAttribute('y2', String(vb.y));
+    [[0, '#ffffff'], [0.36, '#ffffff'], [0.45, '#7ff0e0'], [0.53, '#4aa8ff'], [0.61, '#ffa04a'], [0.7, '#ffffff'], [1, '#ffffff']].forEach(([o, c]) => {
+      const st = document.createElementNS(NS, 'stop');
+      st.setAttribute('offset', String(o)); st.setAttribute('stop-color', String(c));
+      grad.appendChild(st);
     });
+    (svg.querySelector('defs') ?? svg.insertBefore(document.createElementNS(NS, 'defs'), svg.firstChild)).appendChild(grad);
+    group.setAttribute('fill', 'url(#hero-brush-flow)');
+    const flow = { x: 0 };
+    const flowTween = gsap.to(flow, {
+      x: vb.width * 0.8, duration: 7, ease: 'none', repeat: -1,
+      onUpdate: () => grad.setAttribute('gradientTransform', `translate(${flow.x} 0)`),
+    });
+
+    // Entrance: painted on, left to right, each letter wiping along the slant of the brush. Only the
+    // clip moves (no transforms), so the letters cut from shared strokes never open a seam.
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo(letters,
+      { clipPath: 'polygon(0% 0%, 0% 0%, -30% 100%, -30% 100%)', autoAlpha: 0 },
+      { clipPath: 'polygon(0% 0%, 160% 0%, 130% 100%, -30% 100%)', autoAlpha: 1, duration: 1.2, stagger: 0.16, ease: 'power2.out', clearProps: 'clipPath' }, 0);
+
+    // The i|s and U|p pairs were cut from shared strokes, so each pair moves as one unit around a shared
+    // pivot (svgOrigin) and the seam stays closed. W and e are free, so they get their own movement.
+    const units: Record<string, SVGPathElement[]> = { w: [by('w')], is: [by('i'), by('s')], e: [by('e')], up: [by('u'), by('p')] };
+    const origin = (els: SVGPathElement[], fx: number, fy: number) => {
+      const bb = els.map((e) => e.getBBox());
+      const x1 = Math.min(...bb.map((b) => b.x)), x2 = Math.max(...bb.map((b) => b.x + b.width));
+      const y1 = Math.min(...bb.map((b) => b.y)), y2 = Math.max(...bb.map((b) => b.y + b.height));
+      return `${x1 + (x2 - x1) * fx} ${y1 + (y2 - y1) * fy}`;
+    };
+    const pivot: Record<string, string> = { w: origin(units.w, 0.5, 1), is: origin(units.is, 0.5, 1), e: origin(units.e, 0.5, 0.5), up: origin(units.up, 0.5, 1) };
+    Object.entries(units).forEach(([k, els]) => gsap.set(els, { svgOrigin: pivot[k] }));
+
+    const idle = gsap.timeline({ paused: true });
+    const loop = (k: string, vars: gsap.TweenVars, at: number) => idle.to(units[k], { ...vars, ease: 'sine.inOut', yoyo: true, repeat: -1 }, at);
+    loop('w', { rotation: 1.4, duration: 3.2 }, 0);
+    loop('is', { rotation: -1.8, y: -4, duration: 2.4 }, 0.2);
+    loop('e', { y: 6, rotation: 1.2, duration: 2.0 }, 0);
+    loop('up', { rotation: 1.2, y: -5, duration: 2.8 }, 0.4);
+    tl.add(() => idle.play(), '>');
+
+    // Hover: the letter glows in its own colour and its unit springs up (fine pointers only).
+    if (!isTouch()) {
+      const unitOf = (el: SVGPathElement) => Object.entries(units).find(([, els]) => els.includes(el))![1];
+      letters.forEach((el) => {
+        const c = LETTER_GLOW[el.dataset.ch ?? ''] ?? '#6fdcc9';
+        const els = unitOf(el);
+        el.style.cursor = 'pointer';
+        el.addEventListener('pointerenter', () => {
+          gsap.to(els, { scale: 1.05, duration: 0.45, ease: 'back.out(2.4)', overwrite: 'auto' });
+          gsap.to(el, { filter: `drop-shadow(0 0 18px ${c}) drop-shadow(0 0 4px ${c})`, duration: 0.45, overwrite: 'auto' });
+        });
+        el.addEventListener('pointerleave', () => {
+          gsap.to(els, { scale: 1, duration: 0.6, ease: 'power3.out', overwrite: 'auto' });
+          gsap.to(el, { filter: 'drop-shadow(0 0 0px rgba(0,0,0,0))', duration: 0.6, overwrite: 'auto' });
+        });
+      });
+    }
+
     intro.add(() => tl.play(), 0);
+    const st = ScrollTrigger.create({
+      trigger: wrap, start: 'top bottom', end: 'bottom top',
+      onToggle: (s) => { if (s.isActive) { flowTween.play(); if (tl.progress() === 1) idle.play(); } else { flowTween.pause(); idle.pause(); } },
+    });
+    return () => { st.kill(); flowTween.kill(); tl.kill(); idle.kill(); grad.remove(); };
   });
 }
 
