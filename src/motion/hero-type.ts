@@ -20,6 +20,14 @@ import { onPage, isTouch, prefersReducedMotion } from '../engine';
 const NS = 'http://www.w3.org/2000/svg';
 // Palette sampled from the brand swatch strip (teal > green > near-black); every swatch is used.
 const PAL = ['#02657a', '#03728c', '#148797', '#278e8b', '#2f857a', '#235d49', '#15270c'];
+// The same swatches as a dark-top / light-bottom pair, as they appear in the strip.
+const PAL_TOP = ['#023642', '#015163', '#045b6c', '#104c50', '#184640', '#12322f', '#020501'];
+// Lifted tints of each swatch for the tiny balls and highlights, so they read on black.
+const lift = (hex: string, t: number) => {
+  const n = parseInt(hex.slice(1), 16);
+  const c = [n >> 16, (n >> 8) & 255, n & 255].map((v) => Math.round(v + (255 - v) * t));
+  return `#${c.map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+};
 // Sparks use the lighter swatches (plus white) so they read on black.
 const BURST = ['#ffffff', PAL[2], PAL[3], PAL[4], PAL[1], '#ffffff', PAL[2]];
 const GLOW: Record<string, string> = { w: PAL[2], i: PAL[3], s: PAL[4], e: PAL[1], u: PAL[5], p: PAL[0] };
@@ -55,19 +63,23 @@ export function heroType() {
     const fine = !isTouch();
     const defs = svg.querySelector('defs') ?? svg.insertBefore(svgEl('defs'), svg.firstChild);
 
-    // ---- Colour flow: white with a travelling teal > blue > orange glint -----------------------
-    const flow = svgEl('linearGradient', { id: 'hero-brush-flow', gradientUnits: 'userSpaceOnUse', spreadMethod: 'repeat', x1: vb.x, y1: vb.y + vb.height, x2: vb.x + vb.width * 0.8, y2: vb.y });
-    [[0, '#ffffff'], [0.3, '#ffffff'], [0.35, PAL[0]], [0.4, PAL[1]], [0.45, PAL[2]], [0.5, PAL[3]], [0.55, PAL[4]], [0.6, PAL[5]], [0.64, PAL[6]], [0.7, '#ffffff'], [1, '#ffffff']].forEach(([o, c]) =>
-      flow.appendChild(svgEl('stop', { offset: o, 'stop-color': c })));
+    // ---- Colour: the letters are filled with the swatch strip itself (each swatch dark > light, as in the
+    // reference), flowing diagonally through the word so every letter keeps changing colour.
+    const flow = svgEl('linearGradient', { id: 'hero-brush-flow', gradientUnits: 'userSpaceOnUse', spreadMethod: 'repeat', x1: vb.x, y1: vb.y + vb.height, x2: vb.x + vb.width * 0.55, y2: vb.y });
+    PAL.forEach((c, i) => {
+      flow.appendChild(svgEl('stop', { offset: i / PAL.length, 'stop-color': PAL_TOP[i] }));
+      flow.appendChild(svgEl('stop', { offset: (i + 0.55) / PAL.length, 'stop-color': lift(c, 0.12) }));
+    });
+    flow.appendChild(svgEl('stop', { offset: 1, 'stop-color': PAL_TOP[0] }));
     defs.appendChild(flow);
     group.setAttribute('fill', 'url(#hero-brush-flow)');
     const flowPos = { x: 0 };
-    const flowTween = gsap.to(flowPos, { x: vb.width * 0.8, duration: 7, ease: 'none', repeat: -1, onUpdate: () => flow.setAttribute('gradientTransform', `translate(${flowPos.x} 0)`) });
+    const flowTween = gsap.to(flowPos, { x: vb.width * 0.55, duration: 9, ease: 'none', repeat: -1, onUpdate: () => flow.setAttribute('gradientTransform', `translate(${flowPos.x} 0)`) });
 
     // ---- Flashlight: a duplicate of the letters filled with a radial colour that follows the pointer
     const R = vb.width * 0.3;
     const spot = svgEl('radialGradient', { id: 'hero-brush-spot', gradientUnits: 'userSpaceOnUse', cx: -9999, cy: -9999, r: R * 0.8 });
-    [[0, '#ffffff', 1], [0.12, PAL[2], 1], [0.26, PAL[3], 1], [0.4, PAL[4], 1], [0.54, PAL[1], 0.95], [0.68, PAL[0], 0.9], [0.82, PAL[5], 0.7], [1, PAL[6], 0]].forEach(([o, c, a]) =>
+    [[0, '#ffffff', 1], [0.1, lift(PAL[2], 0.55), 1], [0.25, lift(PAL[3], 0.3), 1], [0.4, lift(PAL[4], 0.1), 1], [0.55, PAL[1], 0.95], [0.7, PAL[0], 0.9], [0.85, PAL[5], 0.7], [1, PAL[6], 0]].forEach(([o, c, a]) =>
       spot.appendChild(svgEl('stop', { offset: o, 'stop-color': c, 'stop-opacity': a })));
     defs.appendChild(spot);
 
@@ -88,6 +100,40 @@ export function heroType() {
     overlay.setAttribute('pointer-events', 'none');
     overlay.setAttribute('aria-hidden', 'true');
     overlay.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'));
+    // ---- Smoke and tiny colour balls living inside each letter -------------------------------------
+    // Clipped to the glyph through <use> (follows the letter's live transform); blobs are blurred and
+    // drift on yoyo tweens, the balls are small lifted-swatch dots that wander and twinkle.
+    const smoke = svgEl('g', { 'aria-hidden': 'true', 'pointer-events': 'none' });
+    const blur = svgEl('filter', { id: 'hero-smoke-blur', x: '-20%', y: '-20%', width: '140%', height: '140%' });
+    blur.appendChild(svgEl('feGaussianBlur', { stdDeviation: 16 }));
+    defs.appendChild(blur);
+    const rand = gsap.utils.random;
+    const drift: SVGElement[] = [];
+    letters.forEach((el, li) => {
+      const bb = el.getBBox();
+      const clip = svgEl('clipPath', { id: `hero-clip-${el.dataset.ch}` });
+      clip.appendChild(svgEl('use', { href: `#${el.id}`, 'clip-rule': 'nonzero' }));
+      defs.appendChild(clip);
+      const g = svgEl('g', { 'clip-path': `url(#hero-clip-${el.dataset.ch})` });
+      const blobs = svgEl('g', { filter: 'url(#hero-smoke-blur)' });
+      for (let k = 0; k < 6; k++) {
+        const c = PAL[(li + k) % PAL.length];
+        const b = svgEl('circle', { cx: rand(bb.x, bb.x + bb.width), cy: rand(bb.y, bb.y + bb.height), r: rand(0.22, 0.4) * Math.min(bb.width, bb.height) + 30, fill: lift(c, k % 2 ? 0.25 : 0.05), opacity: rand(0.55, 0.9) });
+        blobs.appendChild(b);
+        gsap.to(b, { attr: { cx: `+=${rand(-0.4, 0.4) * bb.width}`, cy: `+=${rand(-0.35, 0.35) * bb.height}`, r: `*=${rand(0.8, 1.3)}` }, duration: rand(4, 8), ease: 'sine.inOut', yoyo: true, repeat: -1, delay: -rand(0, 6) });
+        drift.push(b);
+      }
+      g.appendChild(blobs);
+      for (let k = 0; k < 14; k++) {
+        const c = k % 5 === 0 ? '#ffffff' : lift(PAL[(li + k) % 6], 0.55);
+        const d = svgEl('circle', { cx: rand(bb.x, bb.x + bb.width), cy: rand(bb.y, bb.y + bb.height), r: rand(2.2, 6), fill: c, opacity: rand(0.5, 1) });
+        g.appendChild(d);
+        gsap.to(d, { attr: { cx: `+=${rand(-70, 70)}`, cy: `+=${rand(-90, 90)}` }, duration: rand(3, 7), ease: 'sine.inOut', yoyo: true, repeat: -1, delay: -rand(0, 6) });
+        gsap.to(d, { opacity: rand(0.1, 0.4), duration: rand(0.8, 2), ease: 'sine.inOut', yoyo: true, repeat: -1, delay: -rand(0, 2) });
+      }
+      smoke.appendChild(g);
+    });
+    liquid.appendChild(smoke);
     liquid.appendChild(overlay);
     gsap.set(overlay, { opacity: 0 });
     const overlayLetters = Array.from(overlay.querySelectorAll<SVGPathElement>('path'));
@@ -276,7 +322,7 @@ export function heroType() {
     });
 
     return () => {
-      st.kill(); tl.kill(); flowTween.kill();
+      st.kill(); tl.kill(); flowTween.kill(); gsap.killTweensOf(smoke.querySelectorAll('circle'));
       gsap.ticker.remove(tick);
       removeEventListener('pointermove', onMove);
       document.documentElement.removeEventListener('pointerleave', onLeave);

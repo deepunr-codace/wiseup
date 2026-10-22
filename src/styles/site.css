@@ -183,7 +183,7 @@
 @keyframes hero-bg-in { from { opacity: 0; } to { opacity: 1; } }
 .hero__title .hero__sub { margin-top: calc(-1 * clamp(40px, 9vw, 150px)); position: relative; z-index: 2; text-shadow: 0 2px 18px rgb(0 0 0 / 0.6); }
 .hero__word { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; margin: 0; line-height: 0; }
-.hero__word .hero__logo { width: min(78vw, 1000px); height: auto; margin-top: 1%; }
+.hero__word .hero__logo { width: min(78vw, 1000px); height: auto; margin-top: 1%; filter: drop-shadow(0 0 26px rgb(20 135 151 / 0.45)) drop-shadow(0 0 70px rgb(47 133 122 / 0.28)); }
 .hero__logo { display: block; overflow: visible; width: 100%; height: auto; }
 .hero__sub { font-size: clamp(1.125rem, 0.95rem + 0.7vw, 1.625rem); font-weight: 500; color: var(--head-a); letter-spacing: -0.015em; }
 /* Wordmark art (scripts/make-hero-wordmark.mjs): every letter is a dark glyph holding blurred smoke
