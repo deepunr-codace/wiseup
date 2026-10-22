@@ -110,7 +110,7 @@
 .sh__b { color: var(--sub-a); }
 
 /* ---------- Hero ---------- */
-.hero { position: relative; display: flex; flex-direction: column; min-height: 100svh; padding-top: calc(var(--head-h) + clamp(48px, 10vh, 140px)); overflow: clip; background: var(--bg); }
+.hero { position: relative; display: flex; flex-direction: column; min-height: 100svh; padding-top: 0; overflow: clip; background: var(--bg); }
 .hero::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; height: 14%; pointer-events: none; background: linear-gradient(transparent, var(--bg)); }
 /* Subpage intro (About/Contact): same top clearance formula as .hero, for a section that opens
    directly under the fixed header instead of behind the full wordmark hero. */
@@ -159,7 +159,13 @@
 .hero__glow { position: absolute; inset: -10% 0 auto; height: 90vh; pointer-events: none;
   background: radial-gradient(40% 50% at 50% 30%, rgb(255 255 255 / 0.07), transparent 70%), radial-gradient(45% 40% at 70% 75%, rgb(42 157 143 / 0.12), transparent 70%); }
 .hero__title { position: relative; z-index: 2; display: grid; justify-items: center; gap: clamp(14px, 2vw, 26px); text-align: center; }
-.hero__word { display: block; margin: 0; line-height: 0; width: min(92vw, 1100px); }
+/* Hero artwork: full-bleed, in flow so the strip below it keeps its place. The tagline rides up over
+   the image's reflection area. The SVG wordmark is kept for screen readers only. */
+.hero__bgimg { display: block; width: 100vw; max-width: none; height: auto; margin-inline: calc(50% - 50vw); animation: hero-bg-in 1.4s ease both;
+  -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent); mask-image: linear-gradient(to bottom, #000 78%, transparent); }
+@keyframes hero-bg-in { from { opacity: 0; } to { opacity: 1; } }
+.hero__title .hero__sub { margin-top: calc(-1 * clamp(40px, 9vw, 150px)); position: relative; z-index: 2; text-shadow: 0 2px 18px rgb(0 0 0 / 0.6); }
+.hero__word { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .hero__logo { display: block; overflow: visible; width: 100%; height: auto; }
 .hero__sub { font-size: clamp(1.125rem, 0.95rem + 0.7vw, 1.625rem); font-weight: 500; color: var(--head-a); letter-spacing: -0.015em; }
 /* Wordmark art (scripts/make-hero-wordmark.mjs): every letter is a dark glyph holding blurred smoke
@@ -198,6 +204,7 @@
    the upper right and bleeds off the bottom of the hero. The plane holds the static 3D/skew transform;
    heroStrip() only ever moves the inner track along the plane's own x axis, so movement follows the
    diagonal. --cw/--gap size the cards; the hero's own height clips the strip at the bottom. */
+.hero__orbit, .hero__orb { display: none; }
 .hero__orbit { position: absolute; z-index: -1; left: 50%; top: 50%; width: min(66vw, 1320px); aspect-ratio: 1; pointer-events: none;
   margin: calc(min(66vw, 1320px) / -2) 0 0 calc(min(66vw, 1320px) / -2); border-radius: 50%;
   background: radial-gradient(closest-side, rgb(255 255 255 / 0.035), rgb(255 255 255 / 0.012) 78%, transparent 100%);
@@ -584,7 +591,7 @@ html:not(.js) .loop-nav { display: none; }
   .tier__p { min-height: 0; }
   .about__g { height: auto; aspect-ratio: 4 / 3; }
   .contrast__rows { grid-template-columns: 1fr; }
-  .hero { padding-top: calc(var(--head-h) + 15vh); }
+  .hero { padding-top: calc(var(--head-h) * 0.6); }
   .strip { --cw: 62vw; --gap: 16px; margin-top: 64px; }
   .hero__orbit { width: 120vw; margin: -60vw 0 0 -60vw; }
   .stats__item { padding-right: 10px; }
