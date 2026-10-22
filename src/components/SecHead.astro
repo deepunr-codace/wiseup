@@ -1,0 +1,12 @@
+---
+// Reference formula: a pill eyebrow with a teal dot, then a two-line heading (bright line, quiet line).
+interface Props { eyebrow: string; lines: string[]; id: string; tag?: 'h2' | 'h1' }
+const { eyebrow, lines, id, tag: Tag = 'h2' } = Astro.props;
+---
+<div class="sh">
+  <p class="eyebrow" data-reveal="fade"><span class="eyebrow__dot" aria-hidden="true"></span>{eyebrow}</p>
+  <Tag id={id} class="sh__h" data-split="lines">
+    <span class="sh__a">{lines[0]}</span>
+    {lines[1] && <span class="sh__b">{lines[1]}</span>}
+  </Tag>
+</div>

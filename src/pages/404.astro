@@ -1,0 +1,22 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Button from '../components/Button.astro';
+import { site } from '../data/site';
+---
+<Base title={`Page not found | ${site.name}`} description="This page doesn't exist. Head back to WiseUp.">
+  <Header slot="header" />
+
+  <section class="sec page-head" aria-labelledby="404-title">
+    <div class="wrap">
+      <p class="eyebrow"><span class="eyebrow__dot" aria-hidden="true"></span>404</p>
+      <h1 id="404-title" class="sh__h">That page burned out.<br /><span class="err__dim">Let's get you back to the plan.</span></h1>
+      <p class="page-head__lede">The page you're looking for doesn't exist or has moved.</p>
+      <div class="err__actions">
+        <Button href="/" label="Back to home" look="teal" />
+        <Button href="/contact" label="Contact us" />
+      </div>
+    </div>
+  </section>
+
+</Base>

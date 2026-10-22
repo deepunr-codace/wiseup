@@ -1,0 +1,81 @@
+/* WiseUp v3 tokens. Built from the reference analysis (reference/image (3).png, image (4).png):
+   pure black ground, near-black cards, Inter, one accent. Accent = WiseUp teal #2A9D8F. */
+
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter-300_700-normal.woff2') format('woff2');
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Outfit';
+  src: url('/fonts/outfit-200_500-normal.woff2') format('woff2');
+  font-weight: 200 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Night (default) */
+  --bg: #050506;
+  --card: #0e0e10;
+  --card-2: #16161a;
+  --card-3: #1d1d22;
+  --edge: rgb(255 255 255 / 0.06);
+  --edge-2: rgb(255 255 255 / 0.12);
+  --ink: #f4f4f5;
+  --ink-2: #c8c8cd;
+  --mute: #8b8b92;
+  --head-a: #ffffff;
+  --head-b: #cfcfd4;
+  --sub-a: #a3a3a9;
+  --sub-b: #6f6f76;
+
+  /* Accent: WiseUp teal and two tints of it */
+  --teal: #2a9d8f;
+  --teal-hi: #6fdcc9;
+  --teal-lo: #1f7a6f;
+  --on-teal: #03110e;
+
+  /* Ember: the About/Contact mark-and-seal concept's transient accent — the colour of the burn
+     itself, used only in the press/sear reveal (see .mark-in in site.css), never at rest. Keeps
+     teal as the one resting accent site-wide; ember only appears mid-motion, then settles to ink. */
+  --ember: #e8743c;
+  --ember-hi: #ffb27a;
+
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mark: 'Outfit', 'Inter', system-ui, sans-serif;
+
+  --maxw: 1288px;
+  --gx: clamp(20px, 3vw, 40px);
+  --sec: clamp(96px, 12vw, 180px);
+  --r-card: 24px;
+  --r-inner: 14px;
+  --r-pill: 999px;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --head-h: 88px;
+}
+
+/* Day: the white mood, applied per section — and, with :root[data-theme='light'], the whole
+   page at once (the header's light/dark toggle, see Header.astro + engine/theme.ts). The toggle
+   only changes this root default; a section that already hardcodes `data-mood="day"` (About,
+   Clients, FAQ) stays exactly as designed either way, since its own attribute is the nearer
+   custom-property source and wins over the root value. */
+[data-mood='day'], :root[data-theme='light'] {
+  --bg: #ffffff;
+  --card: #f4f4f6;
+  --card-2: #ebebee;
+  --card-3: #e2e2e6;
+  --edge: rgb(5 5 6 / 0.06);
+  --edge-2: rgb(5 5 6 / 0.14);
+  --ink: #0b0b0d;
+  --ink-2: #2e2e33;
+  --mute: #5e5e66;
+  --head-a: #050506;
+  --head-b: #2d2d33;
+  --sub-a: #6d6d74;
+  --sub-b: #9a9aa1;
+  --teal-hi: #1f7a6f;
+}

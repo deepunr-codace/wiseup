@@ -1,0 +1,119 @@
+---
+// About, v2 (2026-10-22): one white split page. The left column holds still (tagline, the plan
+// button, an index that marks the section in view); the right column carries the owner's content
+// in five short blocks. Copy is the owner's own, in site.ts `aboutPage`; motion in motion/about.ts.
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Button from '../components/Button.astro';
+import { site, aboutPage as a } from '../data/site';
+// Inlined (not a linked file): one less render-blocking request before the first paint on phones.
+import aboutCss from '../styles/about.css?raw';
+
+const index = [
+  { id: 'who', label: a.who.tag },
+  { id: 'expertise', label: a.expertise.tag },
+  { id: 'values', label: a.values.tag },
+  { id: 'team', label: a.team.tag },
+  { id: 'founders', label: a.founders.tag },
+];
+---
+<Base title={`About Us | ${site.name}`} description="WiseUp is the strategic creative arm of CodeAce IT Solutions: brand building, marketing strategy and growth-led campaigns, backed by over seven years of engineering.">
+  <Header slot="header" current="about" />
+  <style is:inline set:html={aboutCss}></style>
+
+  <div class="ab" data-mood="day">
+    <div class="wrap ab__grid">
+      <!-- LEFT: holds still while the right column scrolls -->
+      <aside class="ab__side" aria-label="About WiseUp">
+        <p class="ab__tag" data-reveal="fade" data-intro><span class="ab__dot" aria-hidden="true"></span>About WiseUp</p>
+        <h1 class="ab__h1">
+          {a.tagline.map((l, i) => <span class:list={['ab__line', { 'ab__line--hi': i === a.tagline.length - 1 }]} data-split="lines" data-intro data-delay={String(i * 0.1)}>{l} </span>)}
+        </h1>
+        <div class="ab__cta" data-reveal="fade" data-intro data-delay="0.4">
+          <Button href="/contact" label={site.cta} look="teal" />
+        </div>
+        <nav class="ab__index" aria-label="On this page" data-reveal="fade" data-intro data-delay="0.5">
+          <span class="ab__ix-mark" data-ix-mark aria-hidden="true"></span>
+          <ol>
+            {index.map((s, i) => (
+              <li>
+                <a class="ab__ix" href={`#${s.id}`} data-ix={s.id}>
+                  <span class="ab__ix-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                  <span class="ab__ix-label">{s.label}</span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      </aside>
+
+      <!-- RIGHT: the owner's content -->
+      <div class="ab__main">
+        <p class="ab__lede">{a.intro}</p>
+
+        <section class="ab__blk" id="who" aria-labelledby="who-h">
+          <p class="ab__k" aria-hidden="true">{a.who.tag}</p>
+          <h2 class="ab__h2" id="who-h" data-split="lines">{a.who.heading}</h2>
+          <div class="ab__cols">
+            {a.who.body.map((p, i) => <p class="ab__p" data-reveal="up" data-delay={String(i * 0.08)}>{p}</p>)}
+          </div>
+          <div class="ab__link" data-reveal="up">
+            <Button href="https://codeace.com" label="Visit codeace.com" icon="arrow-ur" small external />
+          </div>
+        </section>
+
+        <section class="ab__blk" id="expertise" aria-labelledby="expertise-h">
+          <h2 class="ab__k" id="expertise-h">{a.expertise.tag}</h2>
+          <ul class="ab__stats">
+            {a.expertise.stats.map((s, i) => (
+              <li class="ab__stat" data-reveal="up" data-delay={String(i * 0.08)}>
+                <p class="ab__num"><span data-count={s.value}>{s.value}</span>{s.suffix}</p>
+                <h3 class="ab__stat-t">{s.label}</h3>
+                <p class="ab__stat-p">{s.text}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section class="ab__blk" id="values" aria-labelledby="values-h">
+          <h2 class="ab__k" id="values-h">{a.values.tag}</h2>
+          <ul class="ab__vals">
+            {a.values.items.map((v, i) => (
+              <li class="ab__val" data-reveal="up" data-delay={String((i % 2) * 0.08)}>
+                <h3 class="ab__val-t">{v.title}</h3>
+                <p class="ab__val-p">{v.text}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section class="ab__blk" id="team" aria-labelledby="team-h">
+          <h2 class="ab__k" id="team-h">{a.team.tag}</h2>
+          <figure class="ab__team" data-reveal="up">
+            <img src={a.team.photo.src} alt={a.team.photo.alt} width={a.team.photo.width} height={a.team.photo.height} loading="lazy" decoding="async" />
+          </figure>
+          <p class="ab__p ab__p--wide" data-reveal="up">{a.team.text}</p>
+        </section>
+
+        <section class="ab__blk" id="founders" aria-labelledby="founders-h">
+          <h2 class="ab__k" id="founders-h">{a.founders.tag}</h2>
+          <ul class="ab__fdrs">
+            {a.founders.people.map((f, i) => (
+              <li class="ab__fdr" data-reveal="up" data-delay={String(i * 0.1)}>
+                <div class="ab__fdr-img">
+                  <img src={f.photo.src} alt={`Portrait of ${f.name}, ${f.role} of WiseUp`} width={f.photo.width} height={f.photo.height} loading="lazy" decoding="async" />
+                </div>
+                <p class="ab__fdr-n">{f.name}</p>
+                <p class="ab__fdr-r">{f.role}</p>
+              </li>
+            ))}
+          </ul>
+          <div class="ab__end">
+            <Button href="/contact" label={site.cta} look="teal" />
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+</Base>

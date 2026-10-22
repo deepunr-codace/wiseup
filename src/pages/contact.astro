@@ -1,0 +1,100 @@
+---
+// Simple contact page: heading, intro content, contact details, a form, a map. The form has no
+// backend, so it composes a WhatsApp message from its fields (contactForm() in motion/main.ts);
+// without JS it still submits the message field to wa.me as ?text=.
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Button from '../components/Button.astro';
+import Icon from '../components/Icon.astro';
+import { site, contact, services, contactPage as c } from '../data/site';
+---
+<Base title={`Contact Us | ${site.name}`} description={contact.body}>
+  <Header slot="header" current="contact" cta="#form" />
+
+  <!-- HEADING + CONTENT -->
+  <section class="sec page-head cx-hero">
+    <div class="wrap">
+      <p class="eyebrow" data-reveal="fade" data-intro><span class="eyebrow__dot" aria-hidden="true"></span>{contact.tag}</p>
+      <h1 class="cx-hero__h" data-split="lines" data-intro>
+        <span class="cx-hero__a">{c.title[0]}</span>
+        <span class="cx-hero__b">{c.title[1]}</span>
+      </h1>
+      <p class="cx-hero__lede" data-reveal="up" data-intro data-delay="0.2">{c.intro}</p>
+    </div>
+  </section>
+
+  <!-- CONTACT DETAILS + FORM -->
+  <section class="sec cx-sec" id="form" aria-labelledby="form-title">
+    <div class="wrap cx-grid">
+      <div class="cx-details">
+        <h2 class="cx-h2">{c.detailsHeading}</h2>
+        <ul class="cta-rows" data-reveal="up">
+          <li>
+            <a class="cta-row" href={site.whatsapp} rel="noopener" target="_blank">
+              <Icon name="whatsapp" size={22} class="cta-row__ico" />
+              <span class="cta-row__body"><span class="cta-row__t">WhatsApp us</span><span class="cta-row__v">{site.phone}</span></span>
+              <Icon name="arrow-ur" size={18} class="cta-row__go" />
+            </a>
+          </li>
+          <li>
+            <a class="cta-row" href={site.phoneHref}>
+              <Icon name="phone" size={22} class="cta-row__ico" />
+              <span class="cta-row__body"><span class="cta-row__t">Call us</span><span class="cta-row__v">{site.phone}</span></span>
+              <Icon name="arrow-ur" size={18} class="cta-row__go" />
+            </a>
+          </li>
+          <li>
+            <a class="cta-row" href={`mailto:${site.email}?subject=Project%20enquiry`}>
+              <Icon name="mail" size={22} class="cta-row__ico" />
+              <span class="cta-row__body"><span class="cta-row__t">Email us</span><span class="cta-row__v">{site.email}</span></span>
+              <Icon name="arrow-ur" size={18} class="cta-row__go" />
+            </a>
+          </li>
+          <li>
+            <span class="cta-row cta-row--static">
+              <Icon name="globe" size={22} class="cta-row__ico" />
+              <span class="cta-row__body"><span class="cta-row__t">Visit us</span><span class="cta-row__v">{site.city}</span></span>
+            </span>
+          </li>
+        </ul>
+        <ul class="socials" data-reveal="up">
+          {site.socials.map((s) => <li><a class="social" href={s.href} rel="me noopener" target="_blank">{s.label}</a></li>)}
+        </ul>
+      </div>
+
+      <form class="bform" action={site.whatsapp} method="get" target="_blank" data-form data-reveal="up">
+        <h2 id="form-title" class="cx-h2">{c.formHeading}</h2>
+        <label class="bfield"><span>Full name</span><input name="name" autocomplete="name" placeholder="Full name" required /></label>
+        <label class="bfield"><span>Email</span><input type="email" name="email" autocomplete="email" placeholder="Email address" required /></label>
+        <label class="bfield"><span>Phone number</span><input type="tel" name="phone" autocomplete="tel" placeholder="Phone number" required /></label>
+        <label class="bfield bfield--select"><span>Service</span>
+          <select name="service" required>
+            <option value="" selected disabled>Choose a service</option>
+            {services.items.map((s) => <option value={s.title}>{s.title}</option>)}
+          </select>
+          <Icon name="chev-r" size={16} class="bfield__chev" />
+        </label>
+        <label class="bfield bfield--area"><span>Message</span><textarea name="text" rows="5" placeholder="Tell us where you want your brand to go." required></textarea></label>
+        <Button type="submit" label="Send on WhatsApp" look="teal" icon="whatsapp" block />
+        <p class="form__note">Opens WhatsApp with your message ready to send.</p>
+      </form>
+    </div>
+  </section>
+
+  <!-- MAP -->
+  <section class="sec cx-sec cx-map-sec" aria-labelledby="map-title">
+    <div class="wrap">
+      <h2 id="map-title" class="cx-h2">{c.mapHeading}</h2>
+      <div class="cx-map" data-reveal="up">
+        <iframe
+          class="cx-map__frame"
+          src={c.mapEmbed}
+          title={`Map centred on ${site.city}`}
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+        ></iframe>
+      </div>
+    </div>
+  </section>
+
+</Base>

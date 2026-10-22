@@ -1,0 +1,31 @@
+---
+// Buttons. Two looks from the reference: "night" (black pill with a lit rim) and "teal" (flat filled).
+// Hover/focus: the opposite fill sweeps across from the left and the arrow slides out and back in.
+import Icon from './Icon.astro';
+interface Props {
+  href?: string;
+  label: string;
+  look?: 'night' | 'teal';
+  icon?: string | false;
+  block?: boolean;
+  small?: boolean;
+  external?: boolean;
+  type?: 'button' | 'submit';
+  class?: string;
+  [key: string]: unknown;
+}
+const { href, label, look = 'night', icon = 'arrow-r', block = false, small = false, external = false, type = 'button', class: cls, ...rest } = Astro.props;
+const classes = ['b', `b--${look}`, { 'b--block': block, 'b--small': small }, cls];
+const ext = external ? { rel: 'noopener', target: '_blank' } : {};
+---
+{href ? (
+  <a class:list={classes} href={href} {...ext} {...rest}>
+    <span class="b__label">{label}</span>
+    {icon && <span class="b__ico"><Icon name={icon} size={16} /><Icon name={icon} size={16} /></span>}
+  </a>
+) : (
+  <button class:list={classes} type={type} {...rest}>
+    <span class="b__label">{label}</span>
+    {icon && <span class="b__ico"><Icon name={icon} size={16} /><Icon name={icon} size={16} /></span>}
+  </button>
+)}
