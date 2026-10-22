@@ -211,26 +211,10 @@ html:not(.motion) .seq__canvas { display: none; }
 .seq__shade { position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(180deg, #050506 0%, rgb(5 5 6 / 0) 22%, rgb(5 5 6 / 0) 48%, rgb(5 5 6 / 0.88) 100%), linear-gradient(90deg, rgb(5 5 6 / 0.7), transparent 60%); }
 .seq__copy { position: relative; z-index: 2; padding-bottom: clamp(48px, 9vh, 110px); }
-.seq__line { max-width: 15ch; font-size: clamp(2.5rem, 1.1rem + 5.4vw, 6.5rem); font-weight: 340; letter-spacing: -0.048em; line-height: 1.02; color: #f4f4f5; }
+.seq__line { max-width: 15ch; font-size: clamp(2.5rem, 1.1rem + 5.4vw, 6.5rem); font-weight: 450; letter-spacing: -0.048em; line-height: 1.02; color: #f4f4f5; }
 .seq__line > span { display: block; }
 .seq__b { color: #b4b4ba; }
 .seq__c { color: var(--teal-hi); }
-/* Flowing colour: SplitText wraps each word in its own element, so the gradient drifts through the
-   words (background-clip:text on the parent would skip those positioned children). */
-.seq__a div, .seq__b div, .seq__c div {
-  color: transparent; -webkit-text-fill-color: transparent; background-size: 300% 100%;
-  -webkit-background-clip: text; background-clip: text; animation: seq-hue 8s ease-in-out infinite alternate;
-}
-.seq__a div { background-image: linear-gradient(100deg, #f4f4f5 0%, #f4f4f5 30%, var(--teal-hi) 50%, #f4f4f5 70%, #f4f4f5 100%); }
-.seq__b div { background-image: linear-gradient(100deg, #b4b4ba 0%, #b4b4ba 30%, #e9c46a 50%, #b4b4ba 70%, #b4b4ba 100%); }
-.seq__c div { background-image: linear-gradient(100deg, var(--teal-hi) 0%, #a8f0e3 35%, #e9c46a 55%, var(--teal-hi) 100%); }
-.seq__line div:nth-child(2) { animation-delay: -1.2s; }
-.seq__line div:nth-child(3) { animation-delay: -2.4s; }
-.seq__line div:nth-child(4) { animation-delay: -3.6s; }
-.seq__line div:nth-child(5) { animation-delay: -4.8s; }
-.seq__line div:nth-child(6) { animation-delay: -6s; }
-@keyframes seq-hue { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }
-@media (prefers-reduced-motion: reduce) { .seq__a div, .seq__b div, .seq__c div { animation: none; } }
 .seq__after { padding-block: clamp(48px, 6vw, 84px) calc(var(--sec) * 0.45); }
 .seq__row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 28px 40px; }
 .seq__lede { max-width: 52ch; color: var(--ink-2); font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem); line-height: 1.55; }
