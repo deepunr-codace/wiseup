@@ -166,6 +166,15 @@
    its stop-colors are re-tinted here for light mode rather than generating a second SVG. */
 :root[data-theme='light'] #hero-logo-fill stop:first-child { stop-color: #0b0b0d; }
 :root[data-theme='light'] #hero-logo-fill stop:last-child { stop-color: #5e5e66; }
+/* Colour flow: each gradient stop cycles through the same palette, offset in time, so the colours
+   appear to travel along the word. Overrides the static stop colours above while running. */
+:root { --wm-a: #ffffff; --wm-b: #6fdcc9; --wm-c: #e9c46a; }
+:root[data-theme='light'] { --wm-a: #0b0b0d; --wm-b: #1f7a6f; --wm-c: #8a6d1f; }
+#hero-logo-fill stop { animation: wm-flow 10s ease-in-out infinite; }
+#hero-logo-fill stop:nth-child(2) { animation-delay: -2.5s; }
+#hero-logo-fill stop:nth-child(3) { animation-delay: -5s; }
+#hero-logo-fill stop:nth-child(4) { animation-delay: -7.5s; }
+@keyframes wm-flow { 0%, 100% { stop-color: var(--wm-a); } 33% { stop-color: var(--wm-b); } 66% { stop-color: var(--wm-c); } }
 /* The header logo is white brush-script art on a transparent ground (see CLAUDE.md) — it has no
    background chip behind it like the nav pill or CTA, so it needs to invert for light mode. */
 :root[data-theme='light'] .hd__logo img { filter: invert(1); }

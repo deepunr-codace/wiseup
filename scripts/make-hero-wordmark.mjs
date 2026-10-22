@@ -2,7 +2,7 @@
 // animation in motion/main.ts can stagger them individually), plus a duplicate "sheen" layer
 // (same glyph outlines, a moving bright gradient, blend-mode screen in site.css) for the
 // light-sweep highlight that plays once the letters have settled.
-// Font: Switzer Semibold (Fontshare) — a neutral, standard-premium grotesk (closest free
+// Font: Switzer Regular (Fontshare; was Semibold, lightened on request) — a neutral, standard-premium grotesk (closest free
 // alternative to Neue Montreal/Suisse), picked after two swings that didn't land: Clash Display
 // Bold read as too heavy/shouty, Permanent Marker (matching the header logo's brush script) read
 // as unpolished. Switzer is deliberately the safe, confident choice. See CLAUDE.md for the full
@@ -14,7 +14,7 @@ import path from 'node:path';
 import zlib from 'node:zlib';
 
 const TEXT = 'wiseup';
-const FONT_FILE = 'Switzer-Semibold.ttf';
+const FONT_FILE = 'Switzer-Regular.ttf';
 const FONT_ZIP_URL = 'https://api.fontshare.com/v2/fonts/download/switzer';
 const FONT_SIZE = 200;
 const PAD_X = 16;
@@ -146,6 +146,8 @@ const svg = `<svg class="hero__logo hero-logo" width="${w}" height="${h}" viewBo
 <defs>
 <linearGradient id="hero-logo-fill" x1="0" y1="${mid}" x2="${w}" y2="${mid}" gradientUnits="userSpaceOnUse">
 <stop stop-color="white"/>
+<stop offset="0.35" stop-color="#d4d4d8"/>
+<stop offset="0.7" stop-color="#b4b4ba"/>
 <stop offset="1" stop-color="#999999"/>
 </linearGradient>
 <linearGradient id="hero-logo-sheen" x1="${-sheenW}" y1="${mid}" x2="0" y2="${mid}" gradientUnits="userSpaceOnUse">
