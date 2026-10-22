@@ -162,19 +162,18 @@
 .hero__word { display: block; margin: 0; line-height: 0; width: min(92vw, 1100px); }
 .hero__logo { display: block; overflow: visible; width: 100%; height: auto; }
 .hero__sub { font-size: clamp(1.125rem, 0.95rem + 0.7vw, 1.625rem); font-weight: 500; color: var(--head-a); letter-spacing: -0.015em; }
-/* The wordmark's fill is a static gradient baked into the SVG (scripts/make-hero-wordmark.mjs);
-   its stop-colors are re-tinted here for light mode rather than generating a second SVG. */
-:root[data-theme='light'] #hero-logo-fill stop:first-child { stop-color: #0b0b0d; }
-:root[data-theme='light'] #hero-logo-fill stop:last-child { stop-color: #5e5e66; }
-/* Colour flow: each gradient stop cycles through the same palette, offset in time, so the colours
-   appear to travel along the word. Overrides the static stop colours above while running. */
-:root { --wm-a: #ffffff; --wm-b: #6fdcc9; --wm-c: #e9c46a; }
-:root[data-theme='light'] { --wm-a: #0b0b0d; --wm-b: #1f7a6f; --wm-c: #8a6d1f; }
-#hero-logo-fill stop { animation: wm-flow 10s ease-in-out infinite; }
-#hero-logo-fill stop:nth-child(2) { animation-delay: -2.5s; }
-#hero-logo-fill stop:nth-child(3) { animation-delay: -5s; }
-#hero-logo-fill stop:nth-child(4) { animation-delay: -7.5s; }
-@keyframes wm-flow { 0%, 100% { stop-color: var(--wm-a); } 33% { stop-color: var(--wm-b); } 66% { stop-color: var(--wm-c); } }
+/* The wordmark's fill is a gradient baked into the SVG (scripts/make-hero-wordmark.mjs), a teal-to-green
+   palette. Colour flow: each gradient stop cycles through the same palette, offset in time, so the colours
+   appear to travel along the word. The baked stop colours are the static fallback (reduced motion). */
+:root { --wm-1: #02657a; --wm-2: #03728c; --wm-3: #148797; --wm-4: #278e8b; --wm-5: #2f857a; --wm-6: #235d49; }
+#hero-logo-fill stop { animation: wm-flow 14s ease-in-out infinite; }
+#hero-logo-fill stop:nth-child(2) { animation-delay: -3.5s; }
+#hero-logo-fill stop:nth-child(3) { animation-delay: -7s; }
+#hero-logo-fill stop:nth-child(4) { animation-delay: -10.5s; }
+@keyframes wm-flow {
+  0%, 100% { stop-color: var(--wm-1); } 20% { stop-color: var(--wm-2); } 40% { stop-color: var(--wm-3); }
+  60% { stop-color: var(--wm-4); } 80% { stop-color: var(--wm-5); } 90% { stop-color: var(--wm-6); }
+}
 /* The header logo is white brush-script art on a transparent ground (see CLAUDE.md) — it has no
    background chip behind it like the nav pill or CTA, so it needs to invert for light mode. */
 :root[data-theme='light'] .hd__logo img { filter: invert(1); }

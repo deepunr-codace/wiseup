@@ -145,10 +145,10 @@ const svg = `<svg class="hero__logo hero-logo" width="${w}" height="${h}" viewBo
 <title>${TEXT}</title>
 <defs>
 <linearGradient id="hero-logo-fill" x1="0" y1="${mid}" x2="${w}" y2="${mid}" gradientUnits="userSpaceOnUse">
-<stop stop-color="white"/>
-<stop offset="0.35" stop-color="#d4d4d8"/>
-<stop offset="0.7" stop-color="#b4b4ba"/>
-<stop offset="1" stop-color="#999999"/>
+<stop stop-color="#02657a"/>
+<stop offset="0.35" stop-color="#148797"/>
+<stop offset="0.7" stop-color="#2f857a"/>
+<stop offset="1" stop-color="#235d49"/>
 </linearGradient>
 <linearGradient id="hero-logo-sheen" x1="${-sheenW}" y1="${mid}" x2="0" y2="${mid}" gradientUnits="userSpaceOnUse">
 <stop offset="0" stop-color="#fff" stop-opacity="0"/>
