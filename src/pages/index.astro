@@ -6,14 +6,15 @@ import Header from '../components/Header.astro';
 import SecHead from '../components/SecHead.astro';
 import Button from '../components/Button.astro';
 import Icon from '../components/Icon.astro';
+import { testimonials } from '../data/testimonials';
 import { site, hero, marquee, about, process, services, clients, projects, work, codeace, faq, contact } from '../data/site';
 import { SEQ_FRAMES } from '../data/sequence';
 import aboutPhoto from '../assets/about/team.webp';
 
-// Hero strip: the project covers repeated so the loop never shows an edge. Same 5 images each set,
-// so the browser still downloads only 5 files.
+// Hero strip: the client testimonial videos repeated so the loop never shows an edge. The same 8 posters
+// and 8 MP4s each set; the videos are only fetched for the card being played (see hero-strip-video.ts).
 const STRIP_SETS = 4;
-const strip = Array.from({ length: STRIP_SETS }, () => projects).flat();
+const strip = Array.from({ length: STRIP_SETS }, () => testimonials).flat();
 // Work rows: same five covers, the second row in a different order so columns never line up.
 const ROW_SETS = 3;
 const rowA = projects;
@@ -53,9 +54,12 @@ const heroWordmarkSvg = readFileSync(new URL('../../public/brand/hero-wiseup-bru
     <div class="strip" aria-hidden="true" data-strip>
       <div class="strip__plane">
         <div class="strip__track" data-strip-track data-sets={STRIP_SETS}>
-          {strip.map((p, i) => (
-            <figure class="strip__card">
-              <Image src={p.cover.src} alt="" widths={[320, 480, 720]} sizes="(max-width: 640px) 62vw, 20vw" loading="eager" fetchpriority={i === 0 ? 'high' : undefined} />
+          {strip.map((t, i) => (
+            <figure class="strip__card" data-vcard data-video={t.video}>
+              <img src={t.poster.src} srcset={t.poster.srcset} sizes="(max-width: 640px) 62vw, 20vw" alt="" width="576" height="1024"
+                loading={i < 8 ? 'eager' : 'lazy'} decoding="async" fetchpriority={i === 0 ? 'high' : undefined} />
+              <video class="strip__video" muted playsinline preload="none" disablepictureinpicture disableremoteplayback tabindex="-1" aria-hidden="true"></video>
+              <span class="strip__load" aria-hidden="true"></span>
             </figure>
           ))}
         </div>

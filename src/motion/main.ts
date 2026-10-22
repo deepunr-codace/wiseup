@@ -11,6 +11,7 @@ import { site } from '../data/site';
 import { setupAbout } from './about';
 import { heroType } from './hero-type';
 import { heroAqua } from './hero-aqua';
+import { stripVideos } from './hero-strip-video';
 
 gsap.registerPlugin(ScrollTrigger, SplitText, MorphSVGPlugin, Observer);
 
@@ -135,11 +136,14 @@ function heroStrip() {
     intro.from(strip, { yPercent: 24, autoAlpha: 0, duration: 1.6, ease: 'expo.out' }, 0.35);
     const orbitTl = orbit ? gsap.to(orbit, { rotation: 360, duration: 90, ease: 'none', repeat: -1 }) : undefined;
     const hero = strip.closest('section') || strip;
+    // Testimonial videos: the controller slows the drift to a stop on the card it is playing, then releases it.
+    const videos = stripVideos(track, { mobile: isMobile(), hero });
     const stop = driftTrack(track, {
       dir: 1, speed: isMobile() ? 26 : 38, scrollEl: hero, scrollStart: 'top top', scrollShare: 0.55,
+      speedScale: videos.scale,
       onVisible: (v) => orbitTl?.paused(!v),
     });
-    return () => { stop(); orbitTl?.kill(); };
+    return () => { stop(); videos.destroy(); orbitTl?.kill(); };
   });
 }
 
@@ -170,6 +174,8 @@ function workRows() {
  *  Pauses while its scroll element is off screen. dir 1 moves right, -1 moves left. */
 function driftTrack(track: HTMLElement, o: {
   dir: 1 | -1; speed: number; scrollEl: Element; scrollStart: string; scrollShare: number; onVisible?: (visible: boolean) => void;
+  /** Multiplies the drift speed (default 1); lets a caller slow the track, e.g. to dwell on a video. */
+  speedScale?: () => number;
 }) {
   const sets = Number(track.dataset.sets || 1);
   let setW = 0;
@@ -187,7 +193,7 @@ function driftTrack(track: HTMLElement, o: {
 
   const tick = (_t: number, dt: number) => {
     if (!visible || !setW) return;
-    drift += (o.speed * dt) / 1000;
+    drift += (o.speed * dt * (o.speedScale?.() ?? 1)) / 1000;
     const target = drift + scrollOff;
     cur += (target - cur) * (1 - Math.pow(0.86, dt / 16.67)); // frame-rate independent ease toward target
     setX(gsap.utils.wrap(-setW, 0, o.dir * cur - setW));
