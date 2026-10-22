@@ -78,10 +78,10 @@ export function heroType() {
     // ---- Build the 3D letters --------------------------------------------------------------------------
     const R = vb.width * 0.3;
     const specs = [
-      { l: ['w'], idle: { r: 0.8, y: 4, f: 0.9, p: 0 }, spread: { x: -110, y: 0, r: -5 } },
-      { l: ['i', 's'], idle: { r: 1.0, y: 5, f: 0.75, p: 1.3 }, spread: { x: -40, y: -26, r: -2 } },
-      { l: ['e'], idle: { r: 0.7, y: 6, f: 1.1, p: 2.4 }, spread: { x: 40, y: 18, r: 3 } },
-      { l: ['u', 'p'], idle: { r: 0.7, y: 5, f: 0.7, p: 3.7 }, spread: { x: 110, y: -10, r: 5 } },
+      { l: ['w'], idle: { r: 0.3, y: 2.2, f: 0.55, p: 0 }, spread: { x: -110, y: 0, r: -5 } },
+      { l: ['i', 's'], idle: { r: 0.35, y: 2.6, f: 0.45, p: 1.3 }, spread: { x: -40, y: -26, r: -2 } },
+      { l: ['e'], idle: { r: 0.3, y: 2.8, f: 0.65, p: 2.4 }, spread: { x: 40, y: 18, r: 3 } },
+      { l: ['u', 'p'], idle: { r: 0.3, y: 2.4, f: 0.5, p: 3.7 }, spread: { x: 110, y: -10, r: 5 } },
     ];
     const byCh = (ch: string) => letters.find((l) => l.dataset.ch === ch)!;
     const units: Unit[] = specs.map((d) => {
@@ -184,8 +184,8 @@ export function heroType() {
         const px = active ? clamp((sx - u.cx) / R, -1, 1) * fall * 9 : 0;
         const py = active ? clamp((sy - u.cy) / R, -1, 1) * fall * 7 : 0;
         const tX = px + u.spread.x * scrollP;
-        const tY = Math.sin(t * u.idle.f * 1.3 + u.idle.p) * u.idle.y + py - (u.hover ? 9 : 0) + u.spread.y * scrollP;
-        const tR = Math.sin(t * u.idle.f + u.idle.p) * u.idle.r + (active ? clamp((sx - u.cx) / R, -1, 1) * fall * 1.6 : 0) + u.spread.r * scrollP;
+        const tY = Math.sin(t * u.idle.f * 1.3 + u.idle.p) * u.idle.y + Math.sin(t * 9 + u.idle.p * 5) * 0.35 + py - (u.hover ? 9 : 0) + u.spread.y * scrollP;
+        const tR = Math.sin(t * u.idle.f + u.idle.p) * u.idle.r + Math.sin(t * 7.3 + u.idle.p * 3) * 0.05 + (active ? clamp((sx - u.cx) / R, -1, 1) * fall * 1.6 : 0) + u.spread.r * scrollP;
         u.vx += ((tX - u.x) * K - u.vx * C) * dt;
         u.vy += ((tY - u.y) * K - u.vy * C) * dt;
         u.vr += ((tR - u.r) * K - u.vr * C) * dt;
