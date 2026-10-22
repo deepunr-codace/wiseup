@@ -17,6 +17,7 @@ export function setupMotion() {
   menu();
   themeToggle();
   heroWordmark();
+  heroArt();
   heroStrip();
   imageSequence();
   heroLine();
@@ -151,6 +152,98 @@ function heroWordmark() {
       gsap.to(chars, { y: -5, duration: 1.1, ease: 'sine.inOut', yoyo: true, repeat: -1, stagger: 0.14 });
     });
     intro.add(() => tl.play(), 0);
+  });
+}
+
+/* ------------------------------------------------------------------ *
+ * Hero artwork motion layers: the image slowly breathes, the coloured glows pulse and drift, the
+ * phone screen glows, a light sweep crosses the lettering every few seconds, and a canvas of
+ * tiny particles floats upward (blue to the left, orange to the right, like the artwork's light).
+ * Everything runs on GSAP (timelines + one ticker) and sleeps while the hero is off screen.
+ * ------------------------------------------------------------------ */
+function heroArt() {
+  onPage(() => {
+    const art = document.querySelector<HTMLElement>('[data-hero-art]');
+    if (!art || prefersReducedMotion()) return;
+    const img = art.querySelector<HTMLElement>('.hero__bgimg');
+    const glows = art.querySelectorAll<HTMLElement>('[data-fx-glow]');
+    const phone = art.querySelector<HTMLElement>('[data-fx-phone]');
+    const sweep = art.querySelector<HTMLElement>('[data-fx-sweep]');
+    const canvas = art.querySelector<HTMLCanvasElement>('[data-fx-canvas]');
+
+    const tl = gsap.timeline({ repeat: -1 });
+    if (img) tl.to(img, { scale: 1.035, duration: 14, ease: 'sine.inOut', yoyo: true, repeat: 1 }, 0);
+    glows.forEach((g, i) => {
+      tl.to(g, { opacity: 0.8, scale: 1.18, x: i === 1 ? 0 : (i ? -30 : 30), duration: 4 + i, ease: 'sine.inOut', yoyo: true, repeat: -1 }, 0);
+    });
+    if (phone) tl.fromTo(phone, { opacity: 0.35, scale: 0.85 }, { opacity: 1, scale: 1.15, duration: 1.6, ease: 'sine.inOut', yoyo: true, repeat: -1 }, 0);
+    if (sweep) {
+      const sw = gsap.timeline({ repeat: -1, repeatDelay: 4.5, delay: 3 });
+      sw.fromTo(sweep, { xPercent: -100, opacity: 0 }, { xPercent: 380, opacity: 1, duration: 2.8, ease: 'power1.inOut' })
+        .to(sweep, { opacity: 0, duration: 0.5 }, '-=0.6');
+      tl.add(sw, 0);
+    }
+
+    // Particles
+    let tick: (() => void) | null = null;
+    const ctx = canvas?.getContext('2d');
+    if (canvas && ctx) {
+      type P = { x: number; y: number; r: number; vy: number; sway: number; ph: number; a: number; c: string };
+      let w = 0, h = 0, dpr = 1;
+      let parts: P[] = [];
+      const COLORS = ['90,170,255', '60,200,230', '120,230,210', '255,170,90'];
+      const make = (rand: boolean): P => {
+        const x = Math.random();
+        // left half cool, right half warm, a few of either anywhere
+        const warm = x > 0.62 ? Math.random() < 0.75 : Math.random() < 0.08;
+        return {
+          x, y: rand ? Math.random() : 1.02,
+          r: 0.5 + Math.random() * 1.7, vy: 0.012 + Math.random() * 0.03, sway: 0.004 + Math.random() * 0.012,
+          ph: Math.random() * 6.28, a: 0.35 + Math.random() * 0.65, c: warm ? COLORS[3] : COLORS[Math.floor(Math.random() * 3)],
+        };
+      };
+      const size = () => {
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        w = canvas.clientWidth; h = canvas.clientHeight;
+        canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+        parts = Array.from({ length: isMobile() ? 36 : 80 }, () => make(true));
+      };
+      size();
+      addEventListener('resize', size);
+      let t = 0;
+      tick = () => {
+        const dt = Math.min(gsap.ticker.deltaRatio(60), 3);
+        t += 0.016 * dt;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, w, h);
+        ctx.globalCompositeOperation = 'lighter';
+        for (let i = 0; i < parts.length; i++) {
+          const p = parts[i];
+          p.y -= p.vy * 0.016 * 60 * dt * 0.16;
+          const px = (p.x + Math.sin(t * 0.7 + p.ph) * p.sway) * w;
+          const py = p.y * h;
+          if (p.y < -0.02) { parts[i] = make(false); continue; }
+          const tw = 0.55 + 0.45 * Math.sin(t * 2 + p.ph * 3);
+          const edge = Math.min(1, p.y * 6, (1 - p.y) * 6);
+          const al = Math.max(0, p.a * tw * edge);
+          ctx.fillStyle = `rgba(${p.c},${al * 0.18})`;
+          ctx.beginPath(); ctx.arc(px, py, p.r * 3.2, 0, 6.2832); ctx.fill();
+          ctx.fillStyle = `rgba(${p.c},${al})`;
+          ctx.beginPath(); ctx.arc(px, py, p.r, 0, 6.2832); ctx.fill();
+        }
+      };
+      gsap.ticker.add(tick);
+      var cleanupResize = () => removeEventListener('resize', size);
+    }
+
+    const st = ScrollTrigger.create({
+      trigger: art, start: 'top bottom', end: 'bottom top',
+      onToggle: (s) => {
+        if (s.isActive) { tl.play(); if (tick) gsap.ticker.add(tick); }
+        else { tl.pause(); if (tick) gsap.ticker.remove(tick); }
+      },
+    });
+    return () => { st.kill(); tl.kill(); if (tick) gsap.ticker.remove(tick); if (typeof cleanupResize === 'function') cleanupResize(); };
   });
 }
 

@@ -41,7 +41,18 @@ const heroWordmarkSvg = readFileSync(new URL('../../public/brand/hero-wiseup-log
       <div class="hero__orbit" aria-hidden="true" data-orbit><span class="hero__orb"></span></div>
       <!-- The artwork already carries the wordmark, so the animated SVG wordmark stays in the DOM for
            assistive tech only (.hero__word is visually hidden); drop that class to bring it back. -->
-      <Image class="hero__bgimg" src={heroBg} alt="" widths={[800, 1400, 1804]} sizes="100vw" loading="eager" fetchpriority="high" />
+      <div class="hero__art" data-hero-art>
+        <Image class="hero__bgimg" src={heroBg} alt="" widths={[800, 1400, 1804]} sizes="100vw" loading="eager" fetchpriority="high" />
+        <!-- Motion layers over the artwork (heroArt() in motion/main.ts). Positions are % of the image, so they track it at any width. -->
+        <div class="hero__fx" aria-hidden="true">
+          <span class="fx-glow fx-glow--blue" data-fx-glow></span>
+          <span class="fx-glow fx-glow--teal" data-fx-glow></span>
+          <span class="fx-glow fx-glow--orange" data-fx-glow></span>
+          <span class="fx-phone" data-fx-phone></span>
+          <div class="fx-band"><span class="fx-sweep" data-fx-sweep></span></div>
+          <canvas class="fx-canvas" data-fx-canvas></canvas>
+        </div>
+      </div>
       <p class="hero__word" data-wordmark set:html={heroWordmarkSvg} />
       <p class="hero__sub" data-reveal="fade" data-intro data-delay="0.45">{hero.eyebrow}</p>
     </div>
