@@ -145,6 +145,11 @@ function heroWordmark() {
         }, 0.55)
         .to(sheen, { autoAlpha: 0, duration: 0.4 }, '-=0.25');
     }
+    // Once the entrance has landed, the letters keep a small, staggered bounce (the boy on the "i"
+    // dot rides along with his letter).
+    tl.add(() => {
+      gsap.to(chars, { y: -5, duration: 1.1, ease: 'sine.inOut', yoyo: true, repeat: -1, stagger: 0.14 });
+    });
     intro.add(() => tl.play(), 0);
   });
 }
