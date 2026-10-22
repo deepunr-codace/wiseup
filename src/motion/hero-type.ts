@@ -11,8 +11,9 @@
 //    near the cursor, fading back to pure white when it leaves.
 //  - Entrance: each letter is painted on by a diagonal wipe that follows the brush slant.
 //
-// The logo's i|s and U|p were cut from shared strokes, so each pair moves as one rigid unit around a
-// shared pivot (svgOrigin); a seam would open if they moved independently. All motion runs from one
+// Each letter is its own <svg> (a depth svg and a face svg, same viewBox, stacked: all depths first, then
+// all faces, so a neighbour's depth never cuts across a face). The logo's i|s and U|p were cut from shared
+// strokes, so each pair shares one spring; a seam would open if they moved independently. All motion runs from one
 // gsap.ticker callback that sleeps while the hero is off screen; reduced motion keeps the static 3D.
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -39,9 +40,9 @@ const NEAR: [number, number, number] = [92, 96, 102];
 const FAR: [number, number, number] = [8, 10, 12];
 
 type Unit = {
-  els: SVGPathElement[];        // glyph paths in this rigid unit
-  boxes: SVGGElement[];         // their wrapper groups (what gets transformed)
-  layers: SVGUseElement[][];    // depth layers per glyph
+  els: SVGPathElement[];        // glyph paths in this unit
+  letters: string[];            // their letter keys
+  boxes: SVGSVGElement[];       // the depth + face svgs of those letters (what gets transformed)
   cx: number; cy: number;
   idle: { r: number; y: number; f: number; p: number };
   spread: { x: number; y: number; r: number };
@@ -64,9 +65,7 @@ export function heroType() {
     const fine = !isTouch();
     const vb = svg.viewBox.baseVal;
     const defs = svg.querySelector('defs') ?? svg.insertBefore(svgEl('defs'), svg.firstChild);
-    const sheen = svg.querySelector<SVGGElement>('.hero-logo__sheen');
-    sheen?.remove(); // the old light-sweep copy is not used by the 3D build
-    group.setAttribute('fill', '#ffffff');
+    svg.querySelector('.hero-logo__sheen')?.remove(); // the old light-sweep copy is not used by the 3D build
 
     // ---- Hover colour: a faint swatch gradient that flows through the letters ------------------------
     const flow = svgEl('linearGradient', { id: 'hero-color-flow', gradientUnits: 'userSpaceOnUse', spreadMethod: 'repeat', x1: vb.x, y1: vb.y + vb.height, x2: vb.x + vb.width * 0.5, y2: vb.y });
@@ -76,6 +75,10 @@ export function heroType() {
     const flowTween = gsap.to(flowPos, { x: vb.width * 0.5, duration: 6, ease: 'none', repeat: -1, paused: true, onUpdate: () => flow.setAttribute('gradientTransform', `translate(${flowPos.x} 0)`) });
 
     // ---- Build the 3D letters --------------------------------------------------------------------------
+    // Every letter is its own <svg> (same viewBox, stacked), in two layers: all the depth svgs first, then
+    // all the white face svgs. Faces therefore always sit above every letter's depth, so a neighbour's
+    // extrusion can never cut across a face (that was the dark line at the U|p join).
+    // The original inline svg stays in the DOM as the source of the glyph outlines (and the accessible name).
     const R = vb.width * 0.3;
     const specs = [
       { l: ['w'], idle: { r: 0.3, y: 2.2, f: 0.55, p: 0 }, spread: { x: -110, y: 0, r: -5 } },
@@ -83,57 +86,73 @@ export function heroType() {
       { l: ['e'], idle: { r: 0.3, y: 2.8, f: 0.65, p: 2.4 }, spread: { x: 40, y: 18, r: 3 } },
       { l: ['u', 'p'], idle: { r: 0.3, y: 2.4, f: 0.5, p: 3.7 }, spread: { x: 110, y: -10, r: 5 } },
     ];
+    // The i|s and U|p were cut from shared strokes, so those pairs share one spring (they move together,
+    // each still its own svg), which keeps the join closed.
+    wrap.setAttribute('role', 'img');
+    wrap.setAttribute('aria-label', 'WiseUp');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.classList.add('hero-logo--src');
+    const stack = document.createElement('div');
+    stack.className = 'hero-letters';
+    stack.style.aspectRatio = `${vb.width} / ${vb.height}`;
+    wrap.appendChild(stack);
+    const mkSvg = (cls: string) => {
+      const e = svgEl('svg', { class: `hero-l ${cls}`, viewBox: `${vb.x} ${vb.y} ${vb.width} ${vb.height}`, 'aria-hidden': 'true', focusable: 'false' }) as SVGSVGElement;
+      stack.appendChild(e);
+      return e;
+    };
     const byCh = (ch: string) => letters.find((l) => l.dataset.ch === ch)!;
+    const depthSvgs: Record<string, SVGSVGElement> = {};
+    const faceSvgs: Record<string, SVGSVGElement> = {};
+    const tints: Record<string, SVGElement> = {};
+    const layersOf: Record<string, SVGUseElement[]> = {};
+    letters.forEach((el) => { depthSvgs[el.dataset.ch!] = mkSvg('hero-l--depth'); });
+    letters.forEach((el) => { faceSvgs[el.dataset.ch!] = mkSvg('hero-l--face'); });
+    letters.forEach((el) => {
+      const ch = el.dataset.ch!;
+      const ls: SVGUseElement[] = [];
+      for (let i = DEPTH; i >= 1; i--) {
+        const u = svgEl('use', { href: `#${el.id}`, fill: mix(NEAR, FAR, (i - 1) / (DEPTH - 1)) }) as SVGUseElement;
+        depthSvgs[ch].appendChild(u);
+        ls[i] = u;
+      }
+      layersOf[ch] = ls;
+      faceSvgs[ch].appendChild(svgEl('use', { href: `#${el.id}`, fill: '#ffffff', 'data-ch': ch }));
+      tints[ch] = faceSvgs[ch].appendChild(svgEl('use', { href: `#${el.id}`, fill: 'url(#hero-color-flow)', opacity: 0, 'pointer-events': 'none' }));
+    });
+    const unitPx = () => stack.clientWidth / vb.width; // svg units -> css px
     const units: Unit[] = specs.map((d) => {
       const els = d.l.map(byCh);
       const bb = els.map((e) => e.getBBox());
       const x1 = Math.min(...bb.map((b) => b.x)), x2 = Math.max(...bb.map((b) => b.x + b.width));
       const y1 = Math.min(...bb.map((b) => b.y)), y2 = Math.max(...bb.map((b) => b.y + b.height));
-      const boxes: SVGGElement[] = [];
-      const layers: SVGUseElement[][] = [];
-      els.forEach((el) => {
-        const box = svgEl('g', { class: 'hero-3d', 'data-ch': el.dataset.ch ?? '' }) as SVGGElement;
-        group.insertBefore(box, el);
-        const depth = svgEl('g', { 'aria-hidden': 'true', 'pointer-events': 'none' });
-        const ls: SVGUseElement[] = [];
-        for (let i = DEPTH; i >= 1; i--) {
-          const u = svgEl('use', { href: `#${el.id}`, fill: mix(NEAR, FAR, (i - 1) / (DEPTH - 1)) }) as SVGUseElement;
-          depth.appendChild(u);
-          ls[i] = u;
-        }
-        box.appendChild(depth);
-        box.appendChild(el); // the white face on top
-        const tint = svgEl('use', { href: `#${el.id}`, fill: 'url(#hero-color-flow)', opacity: 0, 'pointer-events': 'none', 'aria-hidden': 'true' });
-        box.appendChild(tint);
-        boxes.push(box); layers.push(ls);
-        (box as unknown as { _tint: SVGElement })._tint = tint;
-      });
+      const boxes = d.l.flatMap((c) => [depthSvgs[c], faceSvgs[c]]);
+      // pivot: bottom centre of the unit, as a percentage of the (whole-word) svg box
+      const origin = `${(((x1 + x2) / 2 - vb.x) / vb.width) * 100}% ${((y2 - vb.y) / vb.height) * 100}%`;
+      gsap.set(boxes, { transformOrigin: origin });
       return {
-        els, boxes, layers, cx: (x1 + x2) / 2, cy: (y1 + y2) / 2, idle: d.idle, spread: d.spread, hover: false,
+        els, letters: d.l, boxes, cx: (x1 + x2) / 2, cy: (y1 + y2) / 2, idle: d.idle, spread: d.spread, hover: false,
         x: 0, y: 0, r: 0, vx: 0, vy: 0, vr: 0, dx: 0.62, dy: 0.78, color: 0,
       };
     });
     const setDepth = (u: Unit) => {
-      u.layers.forEach((ls) => {
+      u.letters.forEach((c) => {
+        const ls = layersOf[c];
         for (let i = 1; i <= DEPTH; i++) ls[i].setAttribute('transform', `translate(${(u.dx * STEP * i).toFixed(2)} ${(u.dy * STEP * i).toFixed(2)})`);
       });
     };
-    units.forEach((u) => {
-      setDepth(u);
-      const pivot = `${u.cx} ${u.cy + (Math.max(...u.els.map((e) => e.getBBox().y + e.getBBox().height)) - u.cy)}`;
-      gsap.set(u.boxes, { svgOrigin: pivot });
-    });
-    const unitOf = (el: SVGPathElement) => units.find((u) => u.els.includes(el))!;
+    units.forEach(setDepth);
+    const unitOfCh = (ch: string) => units.find((u) => u.letters.includes(ch))!;
     const allBoxes = units.flatMap((u) => u.boxes);
 
-    // ---- Entrance ---------------------------------------------------------------------------------------
+    // ---- Entrance: one brush-slant wipe across the whole word ------------------------------------------
     gsap.set(wrap, { visibility: 'visible' });
     let ready = reduced;
     const tl = gsap.timeline({ paused: true, onComplete: () => { ready = true; } });
     if (!reduced) {
       tl.fromTo(allBoxes,
-        { clipPath: 'polygon(0% 0%, 0% 0%, -30% 100%, -30% 100%)', autoAlpha: 0 },
-        { clipPath: 'polygon(0% 0%, 160% 0%, 130% 100%, -30% 100%)', autoAlpha: 1, duration: 1.2, stagger: 0.16, ease: 'power2.out', clearProps: 'clipPath' }, 0);
+        { clipPath: 'polygon(-30% -30%, -30% -30%, -50% 130%, -50% 130%)', autoAlpha: 0.001 },
+        { clipPath: 'polygon(-30% -30%, 140% -30%, 120% 130%, -50% 130%)', autoAlpha: 1, duration: 1.7, ease: 'power2.inOut', clearProps: 'clipPath' }, 0);
       intro.add(() => tl.play(), 0);
     }
     if (reduced) return () => {};
@@ -142,7 +161,7 @@ export function heroType() {
     const pt = svg.createSVGPoint();
     const toSvg = (cx: number, cy: number) => {
       pt.x = cx; pt.y = cy;
-      const m = svg.getScreenCTM();
+      const m = faceSvgs.w.getScreenCTM();
       return m ? pt.matrixTransform(m.inverse()) : { x: -9999, y: -9999 };
     };
     let active = false;
@@ -161,9 +180,11 @@ export function heroType() {
     if (fine) {
       addEventListener('pointermove', onMove, { passive: true });
       letters.forEach((el) => {
-        el.style.cursor = 'pointer';
-        el.addEventListener('pointerenter', () => { unitOf(el).hover = true; });
-        el.addEventListener('pointerleave', () => { unitOf(el).hover = false; });
+        const ch = el.dataset.ch!;
+        const face = faceSvgs[ch].firstElementChild as SVGElement;
+        face.style.cursor = 'pointer';
+        face.addEventListener('pointerenter', () => { unitOfCh(ch).hover = true; });
+        face.addEventListener('pointerleave', () => { unitOfCh(ch).hover = false; });
       });
     }
 
@@ -190,7 +211,8 @@ export function heroType() {
         u.vy += ((tY - u.y) * K - u.vy * C) * dt;
         u.vr += ((tR - u.r) * K - u.vr * C) * dt;
         u.x = clamp(u.x + u.vx * dt, -150, 150); u.y = clamp(u.y + u.vy * dt, -60, 60); u.r = clamp(u.r + u.vr * dt, -10, 10);
-        gsap.set(u.boxes, { x: u.x, y: u.y, rotation: u.r });
+        const k = unitPx();
+        gsap.set(u.boxes, { x: u.x * k, y: u.y * k, rotation: u.r });
 
         // light direction: the depth points away from the cursor (resting: down-right)
         let ldx = 0.62, ldy = 0.78;
@@ -208,7 +230,7 @@ export function heroType() {
         const wantC = u.hover ? 0.3 : fall * 0.1;
         u.color += (wantC - u.color) * (1 - Math.exp(-dt * 6));
         const o = u.color < 0.01 ? 0 : u.color;
-        u.boxes.forEach((b) => (b as unknown as { _tint: SVGElement })._tint.setAttribute('opacity', o.toFixed(3)));
+        u.letters.forEach((c) => tints[c].setAttribute('opacity', o.toFixed(3)));
         if (o > 0) anyColor = true;
       });
 
@@ -224,6 +246,7 @@ export function heroType() {
       st.kill(); tl.kill(); flowTween.kill();
       gsap.ticker.remove(tick);
       removeEventListener('pointermove', onMove);
+      stack.remove();
     };
   });
 }
