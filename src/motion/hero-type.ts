@@ -2,7 +2,7 @@
 // lit 3D letters on the dark hero.
 //
 //  - 3D: every letter is extruded by stacking depth layers (<use> copies of the glyph, stepped along
-//    a direction and shaded from light grey near the face to dark grey at the back). The face on top is
+//    a direction and shaded from mid grey near the face to near-black at the back). The face on top is
 //    pure white. Nothing is duplicated as path data, the layers all reference the original glyph.
 //  - Light: the pointer is the light source. Each letter's depth swings away from the cursor, so the
 //    letters appear to turn in 3D as it moves; with no pointer the depth rests down and to the right.
@@ -34,8 +34,9 @@ const mix = (a: [number, number, number], b: [number, number, number], t: number
 
 const DEPTH = 28;          // number of stacked layers
 const STEP = 0.9;          // svg units between layers
-const NEAR: [number, number, number] = [212, 217, 223];
-const FAR: [number, number, number] = [30, 34, 40];
+// Sides are dark, never light grey: the pure white face reads against them, with no white haze.
+const NEAR: [number, number, number] = [92, 96, 102];
+const FAR: [number, number, number] = [8, 10, 12];
 
 type Unit = {
   els: SVGPathElement[];        // glyph paths in this rigid unit
