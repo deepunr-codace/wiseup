@@ -33,11 +33,15 @@ const hex = (n: number) => Math.round(n).toString(16).padStart(2, '0');
 const mix = (a: [number, number, number], b: [number, number, number], t: number) =>
   `#${hex(a[0] + (b[0] - a[0]) * t)}${hex(a[1] + (b[1] - a[1]) * t)}${hex(a[2] + (b[2] - a[2]) * t)}`;
 
+const PARTNER: Record<string, string> = { i: 's', s: 'i', u: 'p', p: 'u' };
 const DEPTH = 42;          // number of stacked layers
 const STEP = 0.6;          // svg units between layers
-// Sides are dark, never light grey: the pure white face reads against them, with no white haze.
-const NEAR: [number, number, number] = [92, 96, 102];
-const FAR: [number, number, number] = [8, 10, 12];
+// Sides are never light grey (no white haze): a soft teal rim picked up from the stage right behind the face,
+// falling off to near-black at the back (ambient occlusion), so the pure white face stays crisp against them.
+const NEAR: [number, number, number] = [86, 140, 146];
+const MID: [number, number, number] = [30, 58, 64];
+const FAR: [number, number, number] = [5, 10, 13];
+const sideColor = (t: number) => (t < 0.3 ? mix(NEAR, MID, t / 0.3) : mix(MID, FAR, (t - 0.3) / 0.7));
 
 type Unit = {
   els: SVGPathElement[];        // glyph paths in this unit
@@ -71,6 +75,16 @@ export function heroType() {
     const flow = svgEl('linearGradient', { id: 'hero-color-flow', gradientUnits: 'userSpaceOnUse', spreadMethod: 'repeat', x1: vb.x, y1: vb.y + vb.height, x2: vb.x + vb.width * 0.5, y2: vb.y });
     [...PAL, PAL[0]].forEach((c, i) => flow.appendChild(svgEl('stop', { offset: i / PAL.length, 'stop-color': c })));
     defs.appendChild(flow);
+    // Bevel: the glyph's alpha, blurred, is used as a height map for a distant light from the upper left, so the
+    // edge of every face is softly rounded: lit edges stay pure white, edges turned away from the light fall to
+    // a gentle grey. The flat interior is lit to exactly 1.0 (pure white). Clipped back to the glyph afterwards.
+    defs.insertAdjacentHTML('beforeend', `
+      <filter id="hero-bevel" x="-3%" y="-3%" width="106%" height="106%" color-interpolation-filters="sRGB">
+        <feGaussianBlur in="SourceAlpha" stdDeviation="3.4" result="h"/>
+        <feDiffuseLighting in="h" surfaceScale="6" diffuseConstant="1.17" lighting-color="#ffffff" result="d"><feDistantLight azimuth="232" elevation="62"/></feDiffuseLighting>
+        <feComposite in="d" in2="SourceAlpha" operator="in"/>
+      </filter>
+      <filter id="hero-shadow" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="10"/></filter>`);
     const flowPos = { x: 0 };
     const flowTween = gsap.to(flowPos, { x: vb.width * 0.5, duration: 6, ease: 'none', repeat: -1, paused: true, onUpdate: () => flow.setAttribute('gradientTransform', `translate(${flowPos.x} 0)`) });
 
@@ -106,18 +120,39 @@ export function heroType() {
     const faceSvgs: Record<string, SVGSVGElement> = {};
     const tints: Record<string, SVGElement> = {};
     const layersOf: Record<string, SVGUseElement[]> = {};
+    const shadows: Record<string, SVGUseElement> = {};
     letters.forEach((el) => { depthSvgs[el.dataset.ch!] = mkSvg('hero-l--depth'); });
     letters.forEach((el) => { faceSvgs[el.dataset.ch!] = mkSvg('hero-l--face'); });
     letters.forEach((el) => {
       const ch = el.dataset.ch!;
       const ls: SVGUseElement[] = [];
+      // soft contact shadow under the whole extrusion (ambient occlusion on the stage)
+      const shadow = svgEl('use', { href: `#${el.id}`, fill: '#010608', opacity: 0.55, filter: 'url(#hero-shadow)' }) as SVGUseElement;
+      depthSvgs[ch].appendChild(shadow);
+      shadows[ch] = shadow;
       for (let i = DEPTH; i >= 1; i--) {
-        const u = svgEl('use', { href: `#${el.id}`, fill: mix(NEAR, FAR, (i - 1) / (DEPTH - 1)) }) as SVGUseElement;
+        const u = svgEl('use', { href: `#${el.id}`, fill: sideColor((i - 1) / (DEPTH - 1)) }) as SVGUseElement;
         depthSvgs[ch].appendChild(u);
         ls[i] = u;
       }
       layersOf[ch] = ls;
-      faceSvgs[ch].appendChild(svgEl('use', { href: `#${el.id}`, fill: '#ffffff', 'data-ch': ch }));
+      // The face is the bevelled union of this letter and its joined partner (i|s, U|p), clipped to this letter.
+      // Bevelling the pair as one shape means no bevel edge can appear along the cut between them.
+      const partner = PARTNER[ch] ? byCh(PARTNER[ch]) : null;
+      const clip = svgEl('clipPath', { id: `hero-fc-${ch}` });
+      clip.appendChild(svgEl('use', { href: `#${el.id}` }));
+      // Kept in this (visible) face svg: a clipPath under the hidden source svg would inherit visibility:hidden
+      // and clip everything away.
+      const fdefs = svgEl('defs');
+      fdefs.appendChild(clip);
+      faceSvgs[ch].appendChild(fdefs);
+      const faceG = svgEl('g', { 'clip-path': partner ? `url(#hero-fc-${ch})` : '' });
+      if (!partner) faceG.removeAttribute('clip-path');
+      const bev = svgEl('g', { filter: 'url(#hero-bevel)' });
+      bev.appendChild(svgEl('use', { href: `#${el.id}`, fill: '#ffffff', 'data-ch': ch }));
+      if (partner) bev.appendChild(svgEl('use', { href: `#${partner.id}`, fill: '#ffffff', 'pointer-events': 'none' }));
+      faceG.appendChild(bev);
+      faceSvgs[ch].appendChild(faceG);
       tints[ch] = faceSvgs[ch].appendChild(svgEl('use', { href: `#${el.id}`, fill: 'url(#hero-color-flow)', opacity: 0, 'pointer-events': 'none' }));
     });
     const unitPx = () => stack.clientWidth / vb.width; // svg units -> css px
@@ -139,6 +174,8 @@ export function heroType() {
       u.letters.forEach((c) => {
         const ls = layersOf[c];
         for (let i = 1; i <= DEPTH; i++) ls[i].setAttribute('transform', `translate(${(u.dx * STEP * i).toFixed(2)} ${(u.dy * STEP * i).toFixed(2)})`);
+        const k = DEPTH + 6; // the shadow lands a little beyond the back of the extrusion
+        shadows[c].setAttribute('transform', `translate(${(u.dx * STEP * k).toFixed(2)} ${(u.dy * STEP * k).toFixed(2)})`);
       });
     };
     units.forEach(setDepth);
@@ -181,7 +218,7 @@ export function heroType() {
       addEventListener('pointermove', onMove, { passive: true });
       letters.forEach((el) => {
         const ch = el.dataset.ch!;
-        const face = faceSvgs[ch].firstElementChild as SVGElement;
+        const face = faceSvgs[ch].querySelector<SVGElement>('use[data-ch]')!;
         face.style.cursor = 'pointer';
         face.addEventListener('pointerenter', () => { unitOfCh(ch).hover = true; });
         face.addEventListener('pointerleave', () => { unitOfCh(ch).hover = false; });

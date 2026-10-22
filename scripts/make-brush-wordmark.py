@@ -70,6 +70,23 @@ for r in range(1, rn + 1):
     cx = np.mean(np.nonzero(rm)[1]) / S
     masks[min(centres, key=lambda k: abs(centres[k] - cx))] |= rm
 
+def smooth(m, sigma=4.6 * S, thr=0.5):
+    """Round and repair one letter's mask: a Gaussian blur followed by a threshold removes slivers and chips
+    thinner than ~sigma (the bristle spikes), closes pin-hole gaps and softens every corner, while the broad
+    strokes (100+ px wide) keep their shape. Done on the letter's bounding box only, for speed."""
+    yy, xx = np.nonzero(m)
+    pad = int(sigma * 3)
+    y0, y1 = max(0, yy.min() - pad), min(m.shape[0], yy.max() + pad + 1)
+    x0, x1 = max(0, xx.min() - pad), min(m.shape[1], xx.max() + pad + 1)
+    out = np.zeros_like(m)
+    out[y0:y1, x0:x1] = ndi.gaussian_filter(m[y0:y1, x0:x1].astype(np.float32), sigma) > thr
+    # drop any island the smoothing left behind (specks), keeping only the main body of the letter
+    lab2, n2 = ndi.label(out)
+    if n2 > 1:
+        sizes2 = ndi.sum(out, lab2, range(1, n2 + 1))
+        out = np.isin(lab2, [i + 1 for i, v in enumerate(sizes2) if v > 0.02 * sizes2.max()])
+    return out
+
 def trace(m):
     # potracer inverts boolean input (it traces the False pixels), hence ~m. Crop to the letter's box
     # first: the trace is pure Python and slow on the full canvas.
@@ -77,7 +94,7 @@ def trace(m):
     y0, x0 = yy.min() - 4, xx.min() - 4
     crop = m[y0:yy.max() + 5, x0:xx.max() + 5]
     bmp = potrace.Bitmap(~crop)
-    plist = bmp.trace(turdsize=1800, turnpolicy=potrace.POTRACE_TURNPOLICY_MINORITY, alphamax=1.15, opticurve=True, opttolerance=0.8)
+    plist = bmp.trace(turdsize=2500, turnpolicy=potrace.POTRACE_TURNPOLICY_MINORITY, alphamax=1.25, opticurve=True, opttolerance=1.2)
     f = lambda p: f'{(p.x + x0) / S:.1f} {(p.y + y0) / S:.1f}'
     parts = []
     for curve in plist:
@@ -91,6 +108,7 @@ def trace(m):
     return ''.join(parts)
 
 order = ['w', 'i', 's', 'e', 'u', 'p']
+masks = {k: smooth(masks[k]) for k in order}
 paths = {k: trace(masks[k]) for k in order}
 boxes = {}
 for k in order:
