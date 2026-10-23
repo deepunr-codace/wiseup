@@ -7,8 +7,8 @@
 //  - Light: the pointer is the light source. Each letter's depth swings away from the cursor, so the
 //    letters appear to turn in 3D as it moves; with no pointer the depth rests down and to the right.
 //  - Hover: letters shift slightly (springs), the hovered one lifts a little further.
-//  - Colour: on hover, the letter (with its joined partner) turns a flowing orange-yellow gradient, fading
-//    back to pure white when the cursor leaves.
+//  - Colour: hovering any letter turns every letter a flowing orange-yellow gradient, fading back to pure
+//    white when the cursor leaves the word.
 //  - Entrance: each letter is painted on by a diagonal wipe that follows the brush slant.
 //
 // Each letter is its own <svg> (a depth svg and a face svg, same viewBox, stacked: all depths first, then
@@ -250,6 +250,7 @@ export function heroType() {
       if (active) { const k = 1 - Math.exp(-dt * 14); sx += (tx - sx) * k; sy += (ty - sy) * k; }
       scrollP += (clamp(scrollY / (innerHeight * 0.7), 0, 1) - scrollP) * (1 - Math.exp(-dt * 8));
       let anyColor = false;
+      const anyHover = units.some((x) => x.hover);
 
       units.forEach((u) => {
         const dx = u.cx - sx, dy = u.cy - sy, d = Math.hypot(dx, dy) || 1;
@@ -280,7 +281,7 @@ export function heroType() {
         if (Math.abs(ndx - u.dx) + Math.abs(ndy - u.dy) > 0.0008) { u.dx = ndx; u.dy = ndy; setDepth(u); }
 
         // faint colour: strongest on the hovered letter, a little on its neighbours
-        const wantC = u.hover ? 1 : 0; // the hovered letter (with its joined partner) turns orange-yellow
+        const wantC = anyHover ? 1 : 0; // hovering any letter turns the whole word orange-yellow
         u.color += (wantC - u.color) * (1 - Math.exp(-dt * 9));
         const o = u.color < 0.01 ? 0 : u.color;
         u.letters.forEach((c) => tints[c].setAttribute('opacity', o.toFixed(3)));
