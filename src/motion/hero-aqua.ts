@@ -63,7 +63,7 @@ export function heroAqua() {
     };
     const drawFluid = (t: number) => {
       ctx.globalCompositeOperation = 'source-over';
-      ctx.fillStyle = '#04080a';
+      ctx.fillStyle = '#020405';
       ctx.fillRect(0, 0, cw, ch);
       ctx.globalCompositeOperation = 'lighter';
       for (const b of blobs) {
@@ -72,8 +72,8 @@ export function heroAqua() {
         const r = b.r * Math.max(cw, ch);
         const g = ctx.createRadialGradient(x, y, 0, x, y, r);
         const [R, G2, B] = b.c;
-        g.addColorStop(0, `rgba(${R},${G2},${B},${b.a * 0.4})`);
-        g.addColorStop(0.5, `rgba(${R},${G2},${B},${b.a * 0.14})`);
+        g.addColorStop(0, `rgba(${R},${G2},${B},${b.a * 0.24})`);
+        g.addColorStop(0.5, `rgba(${R},${G2},${B},${b.a * 0.08})`);
         g.addColorStop(1, `rgba(${R},${G2},${B},0)`);
         ctx.fillStyle = g;
         ctx.fillRect(0, 0, cw, ch);
@@ -82,7 +82,7 @@ export function heroAqua() {
       ctx.globalCompositeOperation = 'lighter';
       const bx = (0.5 + Math.sin(t / 37) * 0.45) * cw;
       const lg = ctx.createLinearGradient(bx - cw * 0.35, 0, bx + cw * 0.35, ch);
-      lg.addColorStop(0, 'rgba(120,200,210,0)'); lg.addColorStop(0.5, 'rgba(120,200,210,0.05)'); lg.addColorStop(1, 'rgba(120,200,210,0)');
+      lg.addColorStop(0, 'rgba(120,200,210,0)'); lg.addColorStop(0.5, 'rgba(120,200,210,0.03)'); lg.addColorStop(1, 'rgba(120,200,210,0)');
       ctx.fillStyle = lg; ctx.fillRect(0, 0, cw, ch);
     };
     size();
@@ -98,7 +98,7 @@ export function heroAqua() {
     for (let i = 0; i < count; i++) {
       // depth: 0 = far, 1 = mid, 2 = near; a repeating pattern, so every band of the screen has all three
       const depth = [1, 0, 2, 0, 1, 2, 0, 1][i % 8];
-      const base = mobile ? 54 : 74;
+      const base = mobile ? 38 : 50;
       const sz = base * [0.62, 0.82, 1.1][depth];
       const el = makeIcon(BRAND_ICONS[i], sz);
       const lane = LANES[i % LANES.length];
