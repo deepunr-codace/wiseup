@@ -12,7 +12,6 @@ import sys, os
 import numpy as np
 from PIL import Image, ImageFilter
 from scipy import ndimage as ndi
-import potrace
 
 SRC = sys.argv[1] if len(sys.argv) > 1 else 'logo.png'
 S = 4  # trace at 4x the source resolution for smooth curves
@@ -87,23 +86,42 @@ def smooth(m, sigma=4.6 * S, thr=0.5):
         out = np.isin(lab2, [i + 1 for i, v in enumerate(sizes2) if v > 0.02 * sizes2.max()])
     return out
 
-def trace(m):
-    # potracer inverts boolean input (it traces the False pixels), hence ~m. Crop to the letter's box
-    # first: the trace is pure Python and slow on the full canvas.
+def trace(m, sigma=30.0, step=9, min_area=3500):
+    """Outline -> smooth cubic Beziers. Each contour is found with OpenCV, its coordinates are low-pass filtered
+    along the contour (Gaussian, `sigma` points, ~7 source px of arc), which irons out wobble and bristle bumps
+    while keeping the overall brush shape, then every `step`-th point becomes a Catmull-Rom knot, written as
+    cubic Beziers: continuous (C1) curves, no corners except where the shape truly turns. Outer contours wind one
+    way and holes the other so a plain nonzero fill cuts the counters out."""
+    import cv2
+    from scipy.ndimage import gaussian_filter1d
     yy, xx = np.nonzero(m)
-    y0, x0 = yy.min() - 4, xx.min() - 4
-    crop = m[y0:yy.max() + 5, x0:xx.max() + 5]
-    bmp = potrace.Bitmap(~crop)
-    plist = bmp.trace(turdsize=2500, turnpolicy=potrace.POTRACE_TURNPOLICY_MINORITY, alphamax=1.25, opticurve=True, opttolerance=1.2)
-    f = lambda p: f'{(p.x + x0) / S:.1f} {(p.y + y0) / S:.1f}'
+    y0, x0 = yy.min() - 6, xx.min() - 6
+    crop = np.pad(m[y0 + 6 - 6 if False else max(y0, 0):yy.max() + 7, max(x0, 0):xx.max() + 7].astype(np.uint8) * 255, 6)
+    y0, x0 = max(y0, 0) - 6, max(x0, 0) - 6
+    cs, hier = cv2.findContours(crop, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
+    f = lambda v: f'{v:.1f}'
     parts = []
-    for curve in plist:
-        parts.append(f'M{f(curve.start_point)}')
-        for seg in curve.segments:
-            if seg.is_corner:
-                parts.append(f'L{f(seg.c)}L{f(seg.end_point)}')
-            else:
-                parts.append(f'C{f(seg.c1)} {f(seg.c2)} {f(seg.end_point)}')
+    for c, h in zip(cs, hier[0]):
+        pts = c[:, 0, :].astype(np.float64)
+        if cv2.contourArea(c) < min_area or len(pts) < 40:
+            continue
+        sm = np.stack([gaussian_filter1d(pts[:, 0], sigma, mode='wrap'), gaussian_filter1d(pts[:, 1], sigma, mode='wrap')], 1)
+        # winding: outer (no parent) positive, hole negative
+        area = 0.5 * np.sum(sm[:, 0] * np.roll(sm[:, 1], -1) - np.roll(sm[:, 0], -1) * sm[:, 1])
+        outer = h[3] < 0
+        if (area > 0) != outer:
+            sm = sm[::-1]
+        k = sm[::step]
+        n = len(k)
+        if n < 4:
+            continue
+        P = lambda i: k[i % n]
+        parts.append(f'M{f((P(0)[0] + x0) / S)} {f((P(0)[1] + y0) / S)}')
+        for i in range(n):  # Catmull-Rom (tension 0.5) -> cubic Bezier from P(i) to P(i+1)
+            p0, p1, p2, p3 = P(i - 1), P(i), P(i + 1), P(i + 2)
+            c1 = p1 + (p2 - p0) / 6
+            c2 = p2 - (p3 - p1) / 6
+            parts.append(f'C{f((c1[0] + x0) / S)} {f((c1[1] + y0) / S)} {f((c2[0] + x0) / S)} {f((c2[1] + y0) / S)} {f((p2[0] + x0) / S)} {f((p2[1] + y0) / S)}')
         parts.append('Z')
     return ''.join(parts)
 
