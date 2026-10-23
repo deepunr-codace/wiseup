@@ -473,8 +473,27 @@ html:not(.js) .loop-nav { display: none; }
 
 /* ---------- Contact ---------- */
 .sec#contact { padding-bottom: var(--sec); }
-.contact { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px, 6vw, 80px); align-items: start; }
-.contact--page { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+.contact { display: grid; gap: clamp(32px, 4.5vw, 56px); }
+.contact--page { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(32px, 6vw, 80px); align-items: start; }
+/* Home contact: a header row (heading left, lede right, sharing one baseline), then two equal-height
+   columns whose top and bottom edges line up: the contact rows stretch to the form's height. */
+.contact__head { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(24px, 6vw, 80px); align-items: end; }
+.contact__head .sh { margin-bottom: 0; }
+.contact__head .contact__p { margin-bottom: 4px; max-width: 44ch; justify-self: start; }
+.contact__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(24px, 6vw, 80px); align-items: stretch; }
+.contact__l { display: grid; }
+.contact__l .contact__rows { display: grid; grid-auto-rows: 1fr; margin-bottom: 0; height: 100%; }
+.contact__l .contact__rows li { display: grid; }
+.contact__l .cta-row { height: 100%; }
+.contact__grid .bform { display: flex; flex-direction: column; height: 100%; }
+.contact__grid .bform .bfield--area { flex: 1; display: flex; }
+.contact__grid .bform .bfield--area textarea { flex: 1; height: 100%; min-height: 150px; resize: none; }
+.contact > .socials { padding-top: clamp(4px, 1vw, 12px); }
+@media (max-width: 860px) {
+  .contact__head, .contact__grid { grid-template-columns: minmax(0, 1fr); }
+  .contact__head { align-items: start; }
+  .contact__l .contact__rows { height: auto; }
+}
 .contact .sh { margin-bottom: 24px; }
 .contact__p { max-width: 40ch; margin-bottom: 30px; font-size: 17px; color: var(--mute); }
 .socials { display: flex; flex-wrap: wrap; gap: 12px; }

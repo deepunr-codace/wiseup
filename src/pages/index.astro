@@ -318,9 +318,12 @@ const heroWordmarkSvg = readFileSync(new URL('../../public/brand/hero-wiseup-bru
        same WhatsApp message on submit (contactForm() in motion/main.ts), just plainer styling. -->
   <section class="sec" id="contact" aria-labelledby="contact-title">
     <div class="wrap contact">
-      <div class="contact__l">
+      <header class="contact__head">
         <SecHead eyebrow={contact.tag} id="contact-title" lines={contact.heading} />
         <p class="contact__p" data-reveal="up">{contact.body}</p>
+      </header>
+      <div class="contact__grid">
+        <div class="contact__l">
         <ul class="cta-rows contact__rows" data-reveal="up">
           <li>
             <a class="cta-row" href={site.whatsapp} rel="noopener" target="_blank">
@@ -350,11 +353,7 @@ const heroWordmarkSvg = readFileSync(new URL('../../public/brand/hero-wiseup-bru
             </span>
           </li>
         </ul>
-        <ul class="socials" data-reveal="up">
-          {site.socials.map((s) => <li><a class="social" href={s.href} rel="me noopener" target="_blank">{s.label}</a></li>)}
-        </ul>
-      </div>
-
+        </div>
       <form class="bform" action={site.whatsapp} method="get" target="_blank" data-form data-reveal="up">
         <label class="bfield"><span>Full name</span><input name="name" autocomplete="name" placeholder="Full name" required /></label>
         <label class="bfield"><span>Email</span><input type="email" name="email" autocomplete="email" placeholder="Email address" required /></label>
@@ -370,6 +369,10 @@ const heroWordmarkSvg = readFileSync(new URL('../../public/brand/hero-wiseup-bru
         <Button type="submit" label="Send on WhatsApp" look="teal" icon="whatsapp" block />
         <p class="form__note">Opens WhatsApp with your message ready to send.</p>
       </form>
+      </div>
+      <ul class="socials" data-reveal="up">
+          {site.socials.map((s) => <li><a class="social" href={s.href} rel="me noopener" target="_blank">{s.label}</a></li>)}
+        </ul>
     </div>
   </section>
 
