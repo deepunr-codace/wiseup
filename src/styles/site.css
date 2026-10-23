@@ -273,7 +273,7 @@ html:not(.motion) .seq__canvas { display: none; }
 .about { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(28px, 6vw, 96px); align-items: start; margin-top: clamp(36px, 5vw, 72px); }
 .about > * { min-width: 0; }
 .about__l { display: grid; align-content: start; }
-.about__l .contrast__rows { margin-top: clamp(28px, 3.5vw, 48px); }
+.about__l .contrast__rows { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: start; gap: clamp(20px, 2.2vw, 28px); margin-top: clamp(24px, 2.8vw, 36px); padding-top: clamp(24px, 2.8vw, 36px); border-top: 1px solid var(--edge-2); }
 .about__body { font-size: clamp(1.125rem, 1rem + 0.45vw, 1.4rem); line-height: 1.55; letter-spacing: -0.012em; color: var(--ink-2); max-width: 52ch; padding-top: 0.4em; }
 /* The photo: centred, wide frame; the image inside is taller than the frame and is moved against the scroll
    by data-parallax (reveal.ts). The frame itself is clipped to rounded corners. */
@@ -289,13 +289,15 @@ html:not(.motion) .seq__canvas { display: none; }
    The big "Posts fade. Brands last." line gets the same scale as the section heading, as its own
    standout line; the proof pairs run underneath the body+photo row as a clean 2-col strip,
    struck-through dim line stacked over a bold teal line in each. */
-.contrast__statement { max-width: 16ch; font-size: clamp(1.875rem, 1.3rem + 2.4vw, 3.25rem); font-weight: 450; letter-spacing: -0.038em; line-height: 1.1; }
-.contrast__statement .contrast__dim { display: block; }
-.contrast__rows { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: start; gap: clamp(24px, 3vw, 40px); margin-top: clamp(40px, 5vw, 64px); padding-top: clamp(24px, 2.8vw, 36px); border-top: 1px solid var(--edge-2); }
-.contrast__row { display: grid; gap: 6px; max-width: 52ch; }
-.contrast__dim { color: var(--mute); text-decoration: line-through; text-decoration-color: var(--edge-2); text-decoration-thickness: 2px; text-underline-offset: 0; }
+/* "Posts fade. / Brands last.": two lines at one size and one tight line-height; the first is quiet, the second is the point. */
+.contrast__statement { display: grid; gap: 0; max-width: 16ch; font-size: clamp(1.875rem, 1.3rem + 2.4vw, 3.25rem); font-weight: 450; letter-spacing: -0.04em; line-height: 1.06; }
+.contrast__statement .contrast__bold { font-size: 1em; font-weight: 450; letter-spacing: inherit; line-height: inherit; color: var(--teal-hi); }
+.contrast__rows { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: start; gap: clamp(20px, 2.2vw, 28px); margin-top: clamp(24px, 2.8vw, 36px); padding-top: clamp(24px, 2.8vw, 36px); border-top: 1px solid var(--edge-2); }
+.contrast__row { display: grid; gap: 4px; max-width: 46ch; padding-left: 18px; border-left: 2px solid var(--teal); }
+.contrast__dim { color: var(--mute); }
+.contrast__row .contrast__dim { font-size: 14.5px; line-height: 1.35; letter-spacing: 0; }
 .contrast__arrow { display: none; }
-.contrast__bold { font-size: clamp(1.1875rem, 1.1rem + 0.45vw, 1.5rem); font-weight: 500; letter-spacing: -0.015em; color: var(--teal-hi); }
+.contrast__bold { font-size: clamp(1.1875rem, 1.1rem + 0.45vw, 1.5rem); font-weight: 500; letter-spacing: -0.015em; line-height: 1.28; color: var(--teal-hi); }
 .ticks { display: grid; gap: 15px; margin-top: 28px; }
 .ticks li { display: flex; gap: 14px; align-items: flex-start; color: var(--ink-2); font-size: 16px; line-height: 1.45; }
 .ticks .ico { flex: none; margin-top: 1px; color: var(--teal-hi); }
