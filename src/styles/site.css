@@ -234,10 +234,7 @@
 /* Image sequence: pinned flame + the H1 */
 .seq { position: relative; background: #000; }
 .seq__pin { position: relative; display: grid; align-items: end; height: 100svh; min-height: 560px; overflow: hidden; }
-.seq__poster, .seq__canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.js.motion .seq__poster { display: none; }
-.seq__pin--empty { background: radial-gradient(40% 50% at 70% 55%, rgb(42 157 143 / 0.35), transparent 70%), #000; }
-html:not(.motion) .seq__canvas { display: none; }
+.seq__canvas { position: absolute; inset: 0; width: 100%; height: 100%; filter: blur(7px) saturate(1.1); transform: scale(1.04); }
 .seq__shade { position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(180deg, #050506 0%, rgb(5 5 6 / 0) 22%, rgb(5 5 6 / 0) 48%, rgb(5 5 6 / 0.88) 100%), linear-gradient(90deg, rgb(5 5 6 / 0.7), transparent 60%); }
 .seq__copy { position: relative; z-index: 2; padding-bottom: clamp(48px, 9vh, 110px); }

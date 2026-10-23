@@ -8,7 +8,6 @@ import Button from '../components/Button.astro';
 import Icon from '../components/Icon.astro';
 import { testimonials } from '../data/testimonials';
 import { site, hero, marquee, about, process, services, clients, projects, work, codeace, faq, contact } from '../data/site';
-import { SEQ_FRAMES } from '../data/sequence';
 import aboutPhoto from '../assets/about/team.webp';
 
 // Hero strip: the client testimonial videos repeated so the loop never shows an edge. The same 8 posters
@@ -20,7 +19,6 @@ const ROW_SETS = 3;
 const rowA = projects;
 const rowB = [projects[3], projects[0], projects[4], projects[2], projects[1]];
 const pad = (n: number) => String(n).padStart(2, '0');
-const lastFrame = `/seq/f${String(SEQ_FRAMES).padStart(3, '0')}.webp`;
 
 // CodeAce figure: one path that morphs CodeAce mark -> WiseUp mark -> flame. The C is the static frame.
 const shapeC = 'M156.6 43.4A80 80 0 1 0 156.6 156.6L132.5 132.5A46 46 0 1 1 132.5 67.5Z';
@@ -69,12 +67,9 @@ const heroWordmarkSvg = readFileSync(new URL('../../public/brand/hero-wiseup-bru
 
   <!-- IMAGE SEQUENCE: the flame ignites as the line is read -->
   <section class="seq" id="voice" aria-labelledby="hero-title">
-    <!-- data-seq-base: where the numbered frames live. Root-relative here for the Astro site;
-         the WordPress generator rewrites this one attribute to the theme's asset folder, so the
-         frame-loading JS below never hardcodes a path that only works at the domain root. -->
-    <div class:list={['seq__pin', { 'seq__pin--empty': !SEQ_FRAMES }]} data-seq data-seq-base="/seq/" data-frames={SEQ_FRAMES}>
-      {SEQ_FRAMES > 0 && <img class="seq__poster" src={lastFrame} alt="" width="960" height="540" loading="lazy" decoding="async" />}
-      {SEQ_FRAMES > 0 && <canvas class="seq__canvas" aria-hidden="true" data-seq-canvas></canvas>}
+    <!-- Live flame backdrop (flameBackdrop() in motion/flame-backdrop.ts): drawn in the brand palette and ignited by the scroll. -->
+    <div class="seq__pin" data-seq>
+      <canvas class="seq__canvas" aria-hidden="true" data-flame></canvas>
       <div class="seq__shade" aria-hidden="true"></div>
       <div class="wrap seq__copy">
         <h1 id="hero-title" class="seq__line" data-words>

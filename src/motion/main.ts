@@ -11,6 +11,7 @@ import { site } from '../data/site';
 import { setupAbout } from './about';
 import { heroType } from './hero-type';
 import { heroAqua } from './hero-aqua';
+import { flameBackdrop } from './flame-backdrop';
 import { stripVideos } from './hero-strip-video';
 
 gsap.registerPlugin(ScrollTrigger, SplitText, MorphSVGPlugin, Observer);
@@ -23,7 +24,7 @@ export function setupMotion() {
   heroAqua();
   aboutPhoto();
   heroStrip();
-  imageSequence();
+  flameBackdrop();
   heroLine();
   horizontalGallery();
   rollingDrum();
@@ -227,65 +228,6 @@ function driftTrack(track: HTMLElement, o: {
     scroll.kill();
     view.kill();
   };
-}
-
-/* ------------------------------------------------------------------ *
- * Image sequence: the flame clip, scrubbed by scroll while the section
- * is pinned. Canvas draws the current frame; the H1 lines light up in
- * step. Skipped (poster frame only) when no sequence was generated.
- * ------------------------------------------------------------------ */
-function imageSequence() {
-  onPage(() => {
-    const pin = document.querySelector<HTMLElement>('[data-seq]');
-    const canvas = document.querySelector<HTMLCanvasElement>('[data-seq-canvas]');
-    const count = Number(pin?.dataset.frames || 0);
-    if (!pin || !canvas || !count || prefersReducedMotion()) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // 96 frames would otherwise all be requested on every page load, regardless of whether the
-    // visitor ever scrolls there — wasteful, and on a slow/throttled connection many stay pending
-    // indefinitely. Frame 1 loads eagerly (so the canvas has something the instant it's reached);
-    // the rest load only once this section is roughly one screen away.
-    const images: HTMLImageElement[] = new Array(count);
-    const base = pin.dataset.seqBase || '/seq/';
-    const src = (i: number) => `${base}f${String(i + 1).padStart(3, '0')}.webp`;
-    const frame = { i: 0 };
-    const load = (i: number) => {
-      if (images[i]) return images[i];
-      const img = new Image();
-      img.decoding = 'async';
-      img.src = src(i);
-      images[i] = img;
-      return img;
-    };
-    const draw = () => {
-      const img = images[Math.round(frame.i)];
-      if (!img || !img.complete || !img.naturalWidth) return;
-      const cw = canvas.width, ch = canvas.height, ir = img.naturalWidth / img.naturalHeight, cr = cw / ch;
-      let dw = cw, dh = ch, dx = 0, dy = 0;
-      if (ir > cr) { dh = ch; dw = ch * ir; dx = (cw - dw) / 2; } else { dw = cw; dh = cw / ir; dy = (ch - dh) / 2; }
-      ctx.clearRect(0, 0, cw, ch);
-      ctx.drawImage(img, dx, dy, dw, dh);
-    };
-    const size = () => { canvas.width = canvas.clientWidth; canvas.height = canvas.clientHeight; draw(); };
-
-    load(0).onload = () => size();
-    size();
-    addEventListener('resize', size);
-
-    // This section starts one screen down, so "near" is true on first paint. Wait for the window
-    // load event too, so the 95 frames never compete with the hero's own images for bandwidth
-    // (on a throttled phone they pushed the hero LCP from ~2s to 8s).
-    const loadRest = () => { for (let i = 1; i < count; i++) load(i).onload = draw; };
-    const afterPageLoad = () => (document.readyState === 'complete' ? loadRest() : addEventListener('load', loadRest, { once: true }));
-    const preload = ScrollTrigger.create({ trigger: pin, start: 'top bottom+=100%', once: true, onEnter: afterPageLoad });
-    const st = ScrollTrigger.create({
-      trigger: pin, start: 'top top', end: '+=140%', pin: true, scrub: 0.5,
-      onUpdate: (self) => { frame.i = Math.min(count - 1, Math.floor(self.progress * count)); draw(); },
-    });
-    return () => { removeEventListener('resize', size); removeEventListener('load', loadRest); preload.kill(); st.kill(); };
-  });
 }
 
 /* Hero statement (under the flame): words light up as they scroll into the reading line. */
