@@ -3,7 +3,7 @@
    short blocks. Runs in the site's day mood. Inlined by pages/about.astro (class selectors only). */
 
 .ab { padding: calc(var(--head-h) + clamp(40px, 7vh, 96px)) 0 clamp(96px, 10vw, 160px); background: var(--bg); color: var(--ink); }
-.ab__grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(40px, 6vw, 120px); align-items: start; }
+.ab__grid { margin-top: clamp(24px, 5vh, 64px); display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(40px, 6vw, 120px); align-items: start; }
 
 /* ---------- Left: holds still ---------- */
 .ab__side { position: sticky; top: calc(var(--head-h) + 32px); display: grid; gap: clamp(24px, 3vh, 36px); justify-items: start; }
@@ -41,7 +41,7 @@
 }
 
 /* ---------- Right: the content ---------- */
-.ab__main { display: grid; gap: clamp(72px, 8vw, 128px); }
+.ab__main { display: grid; gap: clamp(72px, 8vw, 128px); padding-top: clamp(24px, 3.5vw, 56px); }
 .ab__lede { font-size: clamp(1.375rem, 0.95rem + 1.4vw, 2.25rem); line-height: 1.3; letter-spacing: -0.028em; color: var(--ink); text-wrap: pretty; }
 .ab__blk { padding-top: 22px; border-top: 1px solid var(--edge-2); scroll-margin-top: calc(var(--head-h) + 24px); }
 .ab__k { margin-bottom: clamp(24px, 3vw, 36px); font-size: 14px; font-weight: 500; color: var(--teal-hi); }
