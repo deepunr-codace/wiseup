@@ -133,7 +133,7 @@ export function heroType() {
       const ch = el.dataset.ch!;
       const ls: SVGUseElement[] = [];
       // soft contact shadow under the whole extrusion (ambient occlusion on the stage)
-      const shadow = svgEl('use', { href: `#${el.id}`, fill: '#010608', opacity: 0.55, filter: 'url(#hero-shadow)' }) as SVGUseElement;
+      const shadow = svgEl('use', { href: `#${el.id}`, fill: '#010608', opacity: 0.4 }) as SVGUseElement;
       depthSvgs[ch].appendChild(shadow);
       shadows[ch] = shadow;
       for (let i = DEPTH; i >= 1; i--) {
@@ -154,7 +154,7 @@ export function heroType() {
       faceSvgs[ch].appendChild(fdefs);
       const faceG = svgEl('g', { 'clip-path': partner ? `url(#hero-fc-${ch})` : '' });
       if (!partner) faceG.removeAttribute('clip-path');
-      const bev = svgEl('g', { filter: 'url(#hero-bevel)' });
+      const bev = svgEl('g');
       bev.appendChild(svgEl('use', { href: `#${el.id}`, fill: '#ffffff', 'data-ch': ch }));
       if (partner) bev.appendChild(svgEl('use', { href: `#${partner.id}`, fill: '#ffffff', 'pointer-events': 'none' }));
       faceG.appendChild(bev);
@@ -164,7 +164,7 @@ export function heroType() {
       const tintG = svgEl('g', { opacity: 0, 'pointer-events': 'none' });
       const tintClip = svgEl('g', { 'clip-path': partner ? `url(#hero-fc-${ch})` : '' });
       if (!partner) tintClip.removeAttribute('clip-path');
-      const tbev = svgEl('g', { filter: 'url(#hero-bevel-color)' });
+      const tbev = svgEl('g');
       tbev.appendChild(svgEl('use', { href: `#${el.id}`, fill: 'url(#hero-color-flow)' }));
       if (partner) tbev.appendChild(svgEl('use', { href: `#${partner.id}`, fill: 'url(#hero-color-flow)' }));
       tintClip.appendChild(tbev);
