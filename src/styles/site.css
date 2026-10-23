@@ -265,22 +265,29 @@ html:not(.motion) .seq__canvas { display: none; }
 
 /* ---------- About (day) ---------- */
 /* Statement (full width, its own line) -> body + photo (2 col) -> proof pairs (strip). */
-.about { display: grid; grid-template-columns: 5fr 7fr; gap: clamp(28px, 4vw, 64px); align-items: stretch; margin-top: clamp(32px, 4.5vw, 52px); }
-/* min-width: 0 on both grid items: without it, the <img>'s intrinsic width is used as the grid
-   item's minimum size (grid items default to min-width: auto), which forces the 1fr/7fr track
-   wider than the available row and overflows the viewport — a classic CSS grid blowout. */
-.about__body, .about__g { min-width: 0; }
-.about__body { font-size: clamp(1.125rem, 1rem + 0.45vw, 1.4rem); line-height: 1.5; letter-spacing: -0.012em; color: var(--ink-2); }
-/* The one real photo. No fixed height: it stretches (align-items: stretch on .about) to match
-   whatever height the paragraph takes, so it never towers over short copy. */
-.about__g { width: 100%; margin: 0; height: 100%; min-height: clamp(320px, 30vw, 440px); border-radius: var(--r-card); overflow: hidden; background: var(--card); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04), 0 0 0 1px var(--edge); }
-.about__g img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.about-sec .sh__h { max-width: none; }
+.about-sec .sh__a, .about-sec .sh__b { display: block; }
+.about-sec .sh__h { width: 100%; font-size: clamp(2rem, 0.6rem + 3.6vw, 4.75rem); letter-spacing: -0.045em; line-height: 1.04; text-wrap: pretty; }
+@media (min-width: 1000px) { .about-sec .sh__a, .about-sec .sh__b { white-space: nowrap; } }
+/* Below the photo: statement left, body copy right, sharing one top line. */
+.about { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(28px, 6vw, 96px); align-items: start; margin-top: clamp(36px, 5vw, 72px); }
+.about > * { min-width: 0; }
+.about__body { font-size: clamp(1.125rem, 1rem + 0.45vw, 1.4rem); line-height: 1.55; letter-spacing: -0.012em; color: var(--ink-2); max-width: 52ch; padding-top: 0.4em; }
+/* The photo: centred, wide frame; the image inside is taller than the frame and is moved against the scroll
+   by data-parallax (reveal.ts). The frame itself is clipped to rounded corners. */
+.about__g { position: relative; width: min(100%, 1240px); margin: 0 auto; aspect-ratio: 21 / 9; border-radius: clamp(18px, 2.4vw, 32px); overflow: hidden; background: var(--card);
+  box-shadow: 0 40px 80px -30px rgb(0 0 0 / 0.35), 0 0 0 1px var(--edge); will-change: transform; }
+.about__g img { position: absolute; left: 0; width: 100%; height: 124%; top: -12%; max-width: none; object-fit: cover; display: block; }
+@media (max-width: 900px) {
+  .about { grid-template-columns: minmax(0, 1fr); }
+  .about__g { aspect-ratio: 4 / 3; }
+}
 
 /* Contrast statement: the fit/not-fit distinction as an editorial before/after, not a checklist.
    The big "Posts fade. Brands last." line gets the same scale as the section heading, as its own
    standout line; the proof pairs run underneath the body+photo row as a clean 2-col strip,
    struck-through dim line stacked over a bold teal line in each. */
-.contrast__statement { max-width: 20ch; font-size: clamp(1.875rem, 1.3rem + 2.4vw, 3.25rem); font-weight: 450; letter-spacing: -0.038em; line-height: 1.1; }
+.contrast__statement { max-width: 16ch; font-size: clamp(1.875rem, 1.3rem + 2.4vw, 3.25rem); font-weight: 450; letter-spacing: -0.038em; line-height: 1.1; }
 .contrast__statement .contrast__dim { display: block; }
 .contrast__rows { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(24px, 3vw, 40px); margin-top: clamp(40px, 5vw, 64px); padding-top: clamp(24px, 2.8vw, 36px); border-top: 1px solid var(--edge-2); }
 .contrast__row { display: grid; gap: 6px; }
@@ -592,7 +599,6 @@ html:not(.js) .loop-nav { display: none; }
 @media (max-width: 1100px) {
   .tiers, .loop__track { grid-template-columns: repeat(2, 1fr); }
   .about { grid-template-columns: 1fr; }
-  .about__g { height: clamp(360px, 52vw, 480px); }
   .roots { grid-template-columns: 1fr 1fr; }
   .stats { grid-template-columns: repeat(2, 1fr); }
 }
@@ -618,7 +624,6 @@ html:not(.js) .loop-nav { display: none; }
   .tiers, .hgal__list, .loop__track { grid-template-columns: 1fr; }
   .rows { --tile: 72vw; }
   .tier__p { min-height: 0; }
-  .about__g { height: auto; aspect-ratio: 4 / 3; }
   .contrast__rows { grid-template-columns: 1fr; }
   .hero { padding-top: calc(var(--head-h) * 0.6); }
   .strip { --cw: 62vw; --gap: 16px; margin-top: 64px; }

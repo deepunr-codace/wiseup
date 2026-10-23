@@ -21,6 +21,7 @@ export function setupMotion() {
   themeToggle();
   heroType();
   heroAqua();
+  aboutPhoto();
   heroStrip();
   imageSequence();
   heroLine();
@@ -115,6 +116,20 @@ function themeToggle() {
     };
     btn.addEventListener('click', click);
     return () => btn.removeEventListener('click', click);
+  });
+}
+
+/* About photo: the frame starts inset and slightly scaled down, and opens to full width as it scrolls into the
+ * middle of the screen (the parallax drift of the image inside it is data-parallax, in engine/reveal.ts). */
+function aboutPhoto() {
+  onPage(() => {
+    const fig = document.querySelector<HTMLElement>('[data-about-photo]');
+    if (!fig || prefersReducedMotion()) return;
+    const tw = gsap.fromTo(fig, { scale: 0.86, borderRadius: 56 }, {
+      scale: 1, borderRadius: 28, ease: 'none',
+      scrollTrigger: { trigger: fig, start: 'top 92%', end: 'top 35%', scrub: 0.6 },
+    });
+    return () => { tw.scrollTrigger?.kill(); tw.kill(); };
   });
 }
 

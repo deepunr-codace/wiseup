@@ -116,20 +116,20 @@ const heroWordmarkSvg = readFileSync(new URL('../../public/brand/hero-wiseup-bru
   </section>
 
   <!-- ABOUT (day) -->
-  <section class="sec" id="about" data-mood="day" aria-labelledby="about-title">
+  <section class="sec about-sec" id="about" data-mood="day" aria-labelledby="about-title">
     <div class="wrap">
       <SecHead eyebrow={about.tag} id="about-title" lines={about.heading} />
-      <!-- The statement gets real prominence as its own line, body copy pairs with the photo
-           (the proven 2-col split), and the proof pairs run as a clean strip underneath. -->
-      <p class="contrast__statement" data-reveal="up">
-        <span class="contrast__dim">{about.contrast.statement[0]}</span>
-        <span class="contrast__bold">{about.contrast.statement[1]}</span>
-      </p>
+      <!-- Wide, centred photo with a parallax window: the frame is fixed, the image inside drifts against the
+           scroll (data-parallax), and the frame grows from inset to full width as it enters. -->
+      <figure class="about__g" data-about-photo>
+        <Image src={aboutPhoto} data-parallax="0.1" alt="The WiseUp and CodeAce team on stage at a brand launch event" widths={[760, 1200, 1600]} sizes="(max-width: 900px) 100vw, 90vw" loading="lazy" />
+      </figure>
       <div class="about">
+        <p class="contrast__statement" data-reveal="up">
+          <span class="contrast__dim">{about.contrast.statement[0]}</span>
+          <span class="contrast__bold">{about.contrast.statement[1]}</span>
+        </p>
         <p class="about__body" data-reveal="up">{about.body}</p>
-        <figure class="about__g" data-reveal="up">
-          <Image src={aboutPhoto} alt="The WiseUp and CodeAce team on stage at a brand launch event" widths={[480, 760, 1040]} sizes="(max-width: 900px) 100vw, 34vw" loading="lazy" />
-        </figure>
       </div>
       <div class="contrast__rows" data-reveal="up">
         {about.contrast.rows.map((r) => (
