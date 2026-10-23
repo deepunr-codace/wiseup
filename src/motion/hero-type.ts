@@ -34,14 +34,16 @@ const mix = (a: [number, number, number], b: [number, number, number], t: number
   `#${hex(a[0] + (b[0] - a[0]) * t)}${hex(a[1] + (b[1] - a[1]) * t)}${hex(a[2] + (b[2] - a[2]) * t)}`;
 
 const PARTNER: Record<string, string> = { i: 's', s: 'i', u: 'p', p: 'u' };
-const DEPTH = 42;          // number of stacked layers
-const STEP = 0.6;          // svg units between layers
+const DEPTH = 30;          // number of stacked layers
+const STEP = 0.4;          // svg units between layers (about 12 units of thickness in all)
 // Sides are never light grey (no white haze): a soft teal rim picked up from the stage right behind the face,
 // falling off to near-black at the back (ambient occlusion), so the pure white face stays crisp against them.
-const NEAR: [number, number, number] = [86, 140, 146];
-const MID: [number, number, number] = [30, 58, 64];
-const FAR: [number, number, number] = [5, 10, 13];
-const sideColor = (t: number) => (t < 0.3 ? mix(NEAR, MID, t / 0.3) : mix(MID, FAR, (t - 0.3) / 0.7));
+// Shaded as one solid side wall: a bright edge where it meets the face, easing evenly into shadow (a flat dark
+// strip would read as a trench).
+const NEAR: [number, number, number] = [140, 190, 196];
+const MID: [number, number, number] = [44, 86, 94];
+const FAR: [number, number, number] = [10, 24, 30];
+const sideColor = (t: number) => (t < 0.5 ? mix(NEAR, MID, t / 0.5) : mix(MID, FAR, (t - 0.5) / 0.5));
 
 type Unit = {
   els: SVGPathElement[];        // glyph paths in this unit
@@ -162,8 +164,9 @@ export function heroType() {
       // The hover colour is built exactly like the face (bevelled pair union, clipped to this letter), so the
       // parrot-green keeps the rounded bevel and shows no seam at the i|s and U|p joins.
       const tintG = svgEl('g', { opacity: 0, 'pointer-events': 'none' });
-      const tintClip = svgEl('g', { 'clip-path': partner ? `url(#hero-fc-${ch})` : '' });
-      if (!partner) tintClip.removeAttribute('clip-path');
+      // No clip here: both letters of a pair paint the same gradient over the same union, so there is nothing to
+      // cut, and a clip edge would show as a faint straight seam.
+      const tintClip = svgEl('g');
       const tbev = svgEl('g');
       tbev.appendChild(svgEl('use', { href: `#${el.id}`, fill: 'url(#hero-color-flow)' }));
       if (partner) tbev.appendChild(svgEl('use', { href: `#${partner.id}`, fill: 'url(#hero-color-flow)' }));
@@ -268,13 +271,16 @@ export function heroType() {
         const k = unitPx();
         gsap.set(u.boxes, { x: u.x * k, y: u.y * k, rotation: u.r });
 
-        // light direction: the depth points away from the cursor (resting: down-right)
+        // light direction: the depth rests down-right and the cursor only nudges it (at most ~25 degrees either way),
+        // so the thickness always shows on the lower-right edges, like a real lit solid, never on the top edges.
         let ldx = 0.62, ldy = 0.78;
         if (active) {
-          const nx = dx / d, ny = dy / d;
-          const w = 0.35 + 0.65 * Math.exp(-((d / (R * 2)) ** 2));
-          ldx = 0.62 * (1 - w) + nx * w; ldy = 0.78 * (1 - w) + ny * w;
-          const l = Math.hypot(ldx, ldy) || 1; ldx /= l; ldy /= l;
+          const base = Math.atan2(0.78, 0.62);
+          const away = Math.atan2(dy, dx);
+          let diff = away - base; diff = Math.atan2(Math.sin(diff), Math.cos(diff));
+          const w = Math.exp(-((d / (R * 2)) ** 2));
+          const ang = base + Math.max(-0.44, Math.min(0.44, diff * 0.5 * w));
+          ldx = Math.cos(ang); ldy = Math.sin(ang);
         }
         const k2 = 1 - Math.exp(-dt * 9);
         const ndx = u.dx + (ldx - u.dx) * k2, ndy = u.dy + (ldy - u.dy) * k2;
