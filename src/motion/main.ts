@@ -12,7 +12,6 @@ import { setupAbout } from './about';
 import { heroType } from './hero-type';
 import { heroAqua } from './hero-aqua';
 import { flameBackdrop } from './flame-backdrop';
-import { ytBackdrop } from './yt-backdrop';
 import { stripVideos } from './hero-strip-video';
 
 gsap.registerPlugin(ScrollTrigger, SplitText, MorphSVGPlugin, Observer);
@@ -26,7 +25,6 @@ export function setupMotion() {
   aboutPhoto();
   heroStrip();
   flameBackdrop();
-  ytBackdrop();
   heroLine();
   horizontalGallery();
   rollingDrum();
