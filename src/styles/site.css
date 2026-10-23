@@ -255,13 +255,13 @@ html:not(.motion) .seq__canvas { display: none; }
 .stats dt { font-size: 14px; color: var(--mute); }
 
 /* ---------- Logos ---------- */
-.logos { padding-block: 8px clamp(40px, 6vw, 72px); background: var(--bg); }
+.logos { padding-block: clamp(36px, 4.5vw, 64px); background: var(--bg); display: grid; align-items: center; }
 .logos__rail { overflow: hidden; -webkit-mask: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); mask: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); }
 .logos__track { display: flex; width: max-content; animation: slide 55s linear infinite; }
-.logos__set { display: flex; align-items: center; gap: clamp(40px, 5vw, 80px); padding-right: clamp(40px, 5vw, 80px); }
-.logos__item { flex: none; display: grid; place-items: center; height: 44px; }
-.logos__item img { max-height: 38px; width: auto; filter: grayscale(1) brightness(1.9); opacity: 0.55; }
-.logos__item span { font-size: 20px; font-weight: 600; letter-spacing: -0.03em; color: #85858c; white-space: nowrap; }
+.logos__set { display: flex; align-items: center; gap: clamp(48px, 6vw, 96px); padding-right: clamp(48px, 6vw, 96px); }
+.logos__item { flex: none; display: grid; place-items: center; height: clamp(56px, 6vw, 84px); }
+.logos__item img { height: 100%; max-height: clamp(52px, 5.6vw, 80px); width: auto; max-width: clamp(130px, 14vw, 210px); object-fit: contain; filter: grayscale(1) brightness(1.9); opacity: 0.55; }
+.logos__item span { font-size: clamp(22px, 2vw, 30px); font-weight: 600; letter-spacing: -0.03em; color: #85858c; white-space: nowrap; }
 
 /* ---------- About (day) ---------- */
 /* Statement (full width, its own line) -> body + photo (2 col) -> proof pairs (strip). */
