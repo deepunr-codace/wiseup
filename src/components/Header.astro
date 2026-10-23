@@ -11,7 +11,7 @@ const { current, cta = '/#contact' } = Astro.props;
 const links = [...site.nav.map((n) => ({ label: n.label, id: n.href.split('#')[1] })), { label: 'Contact', id: 'contact' }];
 ---
 <header class="hd" data-head>
-  <a class:list={['hd__logo', { 'hd__logo--dark': current === 'about' }]} href="#top" aria-label="WiseUp, back to top">
+  <a class:list={['hd__logo', { 'hd__logo--dark': false }]} href="#top" aria-label="WiseUp, back to top">
     <Image src={logo} alt="WiseUp" width={160} height={83} />
   </a>
 

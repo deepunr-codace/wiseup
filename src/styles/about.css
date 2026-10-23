@@ -1,6 +1,6 @@
-/* About page, v2: one white split page. The left column holds still (tagline, plan button, an
+/* About page, v2: one split page. The left column holds still (tagline, plan button, an
    index that marks the block in view); the right column scrolls the owner's content in five
-   short blocks. Runs in the site's day mood. Inlined by pages/about.astro (class selectors only). */
+   short blocks. Runs in the site's default dark mood. Inlined by pages/about.astro (class selectors only). */
 
 .ab { padding: calc(var(--head-h) + clamp(40px, 7vh, 96px)) 0 clamp(96px, 10vw, 160px); background: var(--bg); color: var(--ink); }
 .ab__grid { margin-top: clamp(24px, 5vh, 64px); display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(40px, 6vw, 120px); align-items: start; }
