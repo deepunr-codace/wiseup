@@ -136,6 +136,13 @@ function heroStrip() {
     intro.from(strip, { yPercent: 24, autoAlpha: 0, duration: 1.6, ease: 'expo.out' }, 0.35);
     const orbitTl = orbit ? gsap.to(orbit, { rotation: 360, duration: 90, ease: 'none', repeat: -1 }) : undefined;
     const hero = strip.closest('section') || strip;
+    // The tagline under the heading tilts with the scroll to the strip's own angle (the plane is rotated -10deg),
+    // so it reads as the heading of the cards below it. Scrubbed to scroll, so it un-tilts on the way back up.
+    const sub = document.querySelector<HTMLElement>('.hero__sub');
+    const subTilt = sub ? gsap.to(sub, {
+      rotation: -10, x: () => -innerWidth * 0.1, y: () => innerHeight * 0.1, transformOrigin: '50% 50%', ease: 'none',
+      scrollTrigger: { trigger: hero, start: 'top top', end: () => `+=${innerHeight * 0.55}`, scrub: 0.6, invalidateOnRefresh: true },
+    }) : undefined;
     // Testimonial videos: the controller slows the drift to a stop on the card it is playing, then releases it.
     const videos = stripVideos(track, { mobile: isMobile(), hero });
     const stop = driftTrack(track, {
@@ -143,7 +150,7 @@ function heroStrip() {
       speedScale: videos.scale,
       onVisible: (v) => orbitTl?.paused(!v),
     });
-    return () => { stop(); videos.destroy(); orbitTl?.kill(); };
+    return () => { stop(); videos.destroy(); orbitTl?.kill(); subTilt?.scrollTrigger?.kill(); subTilt?.kill(); };
   });
 }
 

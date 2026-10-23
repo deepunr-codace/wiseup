@@ -7,8 +7,8 @@
 //  - Light: the pointer is the light source. Each letter's depth swings away from the cursor, so the
 //    letters appear to turn in 3D as it moves; with no pointer the depth rests down and to the right.
 //  - Hover: letters shift slightly (springs), the hovered one lifts a little further.
-//  - Colour: on hover only, a faint gradient built from the brand swatch strip flows through the letters
-//    near the cursor, fading back to pure white when it leaves.
+//  - Colour: on hover, the letter (with its joined partner) turns a flowing orange-yellow gradient, fading
+//    back to pure white when the cursor leaves.
 //  - Entrance: each letter is painted on by a diagonal wipe that follows the brush slant.
 //
 // Each letter is its own <svg> (a depth svg and a face svg, same viewBox, stacked: all depths first, then
@@ -20,8 +20,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { onPage, isTouch, prefersReducedMotion } from '../engine';
 
 const NS = 'http://www.w3.org/2000/svg';
-// Brand swatch strip (teal > green), lifted a little so the hover gradient reads on white.
-const PAL = ['#02657a', '#03728c', '#148797', '#278e8b', '#2f857a', '#235d49'];
+// Hover colour: a warm orange-yellow flow.
+const PAL = ['#ff7a00', '#ff9d00', '#ffc400', '#ffd84a', '#ffc400', '#ff9d00'];
 
 const svgEl = (tag: string, attrs: Record<string, string | number> = {}) => {
   const e = document.createElementNS(NS, tag);
@@ -84,9 +84,15 @@ export function heroType() {
         <feDiffuseLighting in="h" surfaceScale="6" diffuseConstant="1.17" lighting-color="#ffffff" result="d"><feDistantLight azimuth="232" elevation="62"/></feDiffuseLighting>
         <feComposite in="d" in2="SourceAlpha" operator="in"/>
       </filter>
+      <filter id="hero-bevel-color" x="-3%" y="-3%" width="106%" height="106%" color-interpolation-filters="sRGB">
+        <feGaussianBlur in="SourceAlpha" stdDeviation="3.4" result="h"/>
+        <feDiffuseLighting in="h" surfaceScale="6" diffuseConstant="1.17" lighting-color="#ffffff" result="d"><feDistantLight azimuth="232" elevation="62"/></feDiffuseLighting>
+        <feComposite in="d" in2="SourceAlpha" operator="in" result="lit"/>
+        <feBlend in="SourceGraphic" in2="lit" mode="multiply"/>
+      </filter>
       <filter id="hero-shadow" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="10"/></filter>`);
     const flowPos = { x: 0 };
-    const flowTween = gsap.to(flowPos, { x: vb.width * 0.5, duration: 6, ease: 'none', repeat: -1, paused: true, onUpdate: () => flow.setAttribute('gradientTransform', `translate(${flowPos.x} 0)`) });
+    const flowTween = gsap.to(flowPos, { x: vb.width * 0.5, duration: 4, ease: 'none', repeat: -1, paused: true, onUpdate: () => flow.setAttribute('gradientTransform', `translate(${flowPos.x} 0)`) });
 
     // ---- Build the 3D letters --------------------------------------------------------------------------
     // Every letter is its own <svg> (same viewBox, stacked), in two layers: all the depth svgs first, then
@@ -153,7 +159,17 @@ export function heroType() {
       if (partner) bev.appendChild(svgEl('use', { href: `#${partner.id}`, fill: '#ffffff', 'pointer-events': 'none' }));
       faceG.appendChild(bev);
       faceSvgs[ch].appendChild(faceG);
-      tints[ch] = faceSvgs[ch].appendChild(svgEl('use', { href: `#${el.id}`, fill: 'url(#hero-color-flow)', opacity: 0, 'pointer-events': 'none' }));
+      // The hover colour is built exactly like the face (bevelled pair union, clipped to this letter), so the
+      // orange-yellow keeps the rounded bevel and shows no seam at the i|s and U|p joins.
+      const tintG = svgEl('g', { opacity: 0, 'pointer-events': 'none' });
+      const tintClip = svgEl('g', { 'clip-path': partner ? `url(#hero-fc-${ch})` : '' });
+      if (!partner) tintClip.removeAttribute('clip-path');
+      const tbev = svgEl('g', { filter: 'url(#hero-bevel-color)' });
+      tbev.appendChild(svgEl('use', { href: `#${el.id}`, fill: 'url(#hero-color-flow)' }));
+      if (partner) tbev.appendChild(svgEl('use', { href: `#${partner.id}`, fill: 'url(#hero-color-flow)' }));
+      tintClip.appendChild(tbev);
+      tintG.appendChild(tintClip);
+      tints[ch] = faceSvgs[ch].appendChild(tintG);
     });
     const unitPx = () => stack.clientWidth / vb.width; // svg units -> css px
     const units: Unit[] = specs.map((d) => {
@@ -264,8 +280,8 @@ export function heroType() {
         if (Math.abs(ndx - u.dx) + Math.abs(ndy - u.dy) > 0.0008) { u.dx = ndx; u.dy = ndy; setDepth(u); }
 
         // faint colour: strongest on the hovered letter, a little on its neighbours
-        const wantC = u.hover ? 0.3 : fall * 0.1;
-        u.color += (wantC - u.color) * (1 - Math.exp(-dt * 6));
+        const wantC = u.hover ? 1 : 0; // the hovered letter (with its joined partner) turns orange-yellow
+        u.color += (wantC - u.color) * (1 - Math.exp(-dt * 9));
         const o = u.color < 0.01 ? 0 : u.color;
         u.letters.forEach((c) => tints[c].setAttribute('opacity', o.toFixed(3)));
         if (o > 0) anyColor = true;
