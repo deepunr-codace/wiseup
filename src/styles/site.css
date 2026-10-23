@@ -289,8 +289,8 @@ html:not(.motion) .seq__canvas { display: none; }
    struck-through dim line stacked over a bold teal line in each. */
 .contrast__statement { max-width: 16ch; font-size: clamp(1.875rem, 1.3rem + 2.4vw, 3.25rem); font-weight: 450; letter-spacing: -0.038em; line-height: 1.1; }
 .contrast__statement .contrast__dim { display: block; }
-.contrast__rows { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(24px, 3vw, 40px); margin-top: clamp(40px, 5vw, 64px); padding-top: clamp(24px, 2.8vw, 36px); border-top: 1px solid var(--edge-2); }
-.contrast__row { display: grid; gap: 6px; }
+.contrast__rows { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: start; gap: clamp(24px, 3vw, 40px); margin-top: clamp(40px, 5vw, 64px); padding-top: clamp(24px, 2.8vw, 36px); border-top: 1px solid var(--edge-2); }
+.contrast__row { display: grid; gap: 6px; max-width: 52ch; }
 .contrast__dim { color: var(--mute); text-decoration: line-through; text-decoration-color: var(--edge-2); text-decoration-thickness: 2px; text-underline-offset: 0; }
 .contrast__arrow { display: none; }
 .contrast__bold { font-size: clamp(1.1875rem, 1.1rem + 0.45vw, 1.5rem); font-weight: 500; letter-spacing: -0.015em; color: var(--teal-hi); }
