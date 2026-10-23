@@ -120,20 +120,22 @@ const heroWordmarkSvg = readFileSync(new URL('../../public/brand/hero-wiseup-bru
         <Image src={aboutPhoto} data-parallax="0.1" alt="The WiseUp and CodeAce team on stage at a brand launch event" widths={[760, 1200, 1600]} sizes="(max-width: 900px) 100vw, 90vw" loading="lazy" />
       </figure>
       <div class="about">
-        <p class="contrast__statement" data-reveal="up">
-          <span class="contrast__dim">{about.contrast.statement[0]}</span>
-          <span class="contrast__bold">{about.contrast.statement[1]}</span>
-        </p>
-        <p class="about__body" data-reveal="up">{about.body}</p>
-      </div>
-      <div class="contrast__rows" data-reveal="up">
-        {about.contrast.rows.map((r) => (
-          <p class="contrast__row">
-            <span class="contrast__dim">{r.no}</span>
-            <Icon name="arrow-r" size={18} class="contrast__arrow" />
-            <span class="contrast__bold">{r.yes}</span>
+        <div class="about__l">
+          <p class="contrast__statement" data-reveal="up">
+            <span class="contrast__dim">{about.contrast.statement[0]}</span>
+            <span class="contrast__bold">{about.contrast.statement[1]}</span>
           </p>
-        ))}
+          <div class="contrast__rows" data-reveal="up">
+          {about.contrast.rows.map((r) => (
+            <p class="contrast__row">
+              <span class="contrast__dim">{r.no}</span>
+              <Icon name="arrow-r" size={18} class="contrast__arrow" />
+              <span class="contrast__bold">{r.yes}</span>
+            </p>
+          ))}
+          </div>
+        </div>
+        <p class="about__body" data-reveal="up">{about.body}</p>
       </div>
     </div>
   </section>
