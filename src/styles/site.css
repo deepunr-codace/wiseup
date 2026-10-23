@@ -161,7 +161,7 @@
 .hero__title { position: relative; z-index: 2; display: grid; justify-items: center; gap: clamp(14px, 2vw, 26px); text-align: center; }
 /* Hero artwork: full-bleed, in flow so the strip below it keeps its place. The tagline rides up over
    the image's reflection area. The SVG wordmark is kept for screen readers only. */
-.hero__art { position: relative; width: 100vw; margin-inline: calc(50% - 50vw); aspect-ratio: 1738 / 800; }
+.hero__art { position: relative; width: 100vw; margin-inline: calc(50% - 50vw); aspect-ratio: 1738 / 640; }
 .hero__title .hero__sub { margin-top: calc(-1 * clamp(40px, 9vw, 150px)); position: relative; z-index: 2; text-shadow: 0 2px 18px rgb(0 0 0 / 0.6); }
 .hero__word { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; margin: 0; line-height: 0; }
 .hero__word .hero__logo { width: min(78vw, 1000px); height: auto; margin-top: 1%;  }
@@ -653,7 +653,7 @@ html:not(.js) .loop-nav { display: none; }
 
 /* Small screens: the artwork box is a short banner, so give the brush heading more room. */
 @media (max-width: 700px) {
-  .hero__art { min-height: 96vw; }
+  .hero__art { min-height: 70vw; }
   .hero__word .hero__logo { width: 90vw; margin-top: 6%; }
   .hero__title .hero__sub { margin-top: calc(-1 * clamp(12px, 6vw, 40px)); }
 }
@@ -682,7 +682,7 @@ html:not(.js) .loop-nav { display: none; }
 /* Hero letters: each letter is its own <svg>; they stack over one another in the same coordinate box
    (all depth layers first, then all white faces). The original inline svg only supplies the outlines. */
 .hero-logo--src { position: absolute; width: 0; height: 0; overflow: hidden; visibility: hidden; }
-.hero-letters { position: relative; grid-area: 1 / 1; width: min(60vw, 780px); }
+.hero-letters { position: relative; grid-area: 1 / 1; width: min(46vw, 600px); }
 .hero-l { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 .hero-l--face use[data-ch] { pointer-events: visiblePainted; }
-@media (max-width: 700px) { .hero-letters { width: 76vw; margin-top: 6%; } }
+@media (max-width: 700px) { .hero-letters { width: 62vw; margin-top: 6%; } }
