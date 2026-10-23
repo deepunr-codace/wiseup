@@ -21,7 +21,8 @@ const PAL: [number, number, number][] = [
 
 // Order matters: neighbours in this list rise one after another, so mix social, search, data and commerce.
 // Lane (x position, % of the hero) per icon in BRAND_ICONS order: alternating sides, never adjacent.
-const LANES = [9, 78, 31, 91, 18, 62, 45, 86, 6, 70, 24, 52, 94, 38, 14, 82];
+// Icons are born in the bottom-left corner and climb the left edge only: lanes sit inside a narrow strip (2-15%).
+const LANES = [3, 11, 7, 14, 5, 12, 9, 2.5, 13, 6, 10, 4, 15, 8, 11.5, 5.5];
 const LAYERS = 8; // stacked layers that give each tile real thickness
 
 function makeIcon(icon: BrandIcon, size: number) {
@@ -101,7 +102,7 @@ export function heroAqua() {
       const base = mobile ? 38 : 50;
       const sz = base * [0.62, 0.82, 1.1][depth];
       const el = makeIcon(BRAND_ICONS[i], sz);
-      const lane = LANES[i % LANES.length];
+      const lane = LANES[i % LANES.length] * (mobile ? 1.7 : 1);
       el.style.left = `${lane}%`;
       el.style.setProperty('--blur', `${[2.2, 0.9, 0]![depth]}px`);
       el.style.setProperty('--dim', `${[0.5, 0.78, 1][depth]}`);
@@ -110,11 +111,13 @@ export function heroAqua() {
       nodes.push(el);
 
       const dur = [30, 23, 17][depth] + (i % 4) * 1.6;      // far drifts slowest (parallax)
-      const sway = [10, 16, 24][depth];
+      const sway = [5, 8, 12][depth];
       const inner = el.querySelector<HTMLElement>('.aqua-ico__3d')!;
       // rise: one long upward travel, fading in near the bottom and out near the top
       const rise = gsap.timeline({ repeat: -1, repeatDelay: 1.5 + (i % 3) * 1.2 });
-      rise.fromTo(el, { y: '6vh', opacity: 0 }, { y: '-112vh', duration: dur, ease: 'none' }, 0)
+      rise.fromTo(el, { y: '6vh', opacity: 0, left: '1.5%' }, { y: '-112vh', duration: dur, ease: 'none' }, 0)
+        // born in the bottom-left corner, then fan out into this icon's lane on the way up
+        .to(el, { left: `${lane}%`, duration: dur * 0.32, ease: 'sine.out' }, 0)
         .to(el, { opacity: 1, duration: dur * 0.14, ease: 'sine.out' }, 0)
         .to(el, { opacity: 0, duration: dur * 0.2, ease: 'sine.in' }, dur * 0.8);
       // start evenly spread along the cycle so the hero is already alive on load

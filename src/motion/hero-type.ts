@@ -7,7 +7,7 @@
 //  - Light: the pointer is the light source. Each letter's depth swings away from the cursor, so the
 //    letters appear to turn in 3D as it moves; with no pointer the depth rests down and to the right.
 //  - Hover: letters shift slightly (springs), the hovered one lifts a little further.
-//  - Colour: hovering any letter turns every letter a flowing orange-yellow gradient, fading back to pure
+//  - Colour: hovering any letter turns every letter a flowing parrot-green gradient, fading back to pure
 //    white when the cursor leaves the word.
 //  - Entrance: each letter is painted on by a diagonal wipe that follows the brush slant.
 //
@@ -20,8 +20,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { onPage, isTouch, prefersReducedMotion } from '../engine';
 
 const NS = 'http://www.w3.org/2000/svg';
-// Hover colour: a warm orange-yellow flow.
-const PAL = ['#ff7a00', '#ff9d00', '#ffc400', '#ffd84a', '#ffc400', '#ff9d00'];
+// Hover colour: a flowing parrot-green gradient.
+const PAL = ['#3fae1f', '#62c926', '#8be02f', '#a8ec4a', '#8be02f', '#62c926'];
 
 const svgEl = (tag: string, attrs: Record<string, string | number> = {}) => {
   const e = document.createElementNS(NS, tag);
@@ -160,7 +160,7 @@ export function heroType() {
       faceG.appendChild(bev);
       faceSvgs[ch].appendChild(faceG);
       // The hover colour is built exactly like the face (bevelled pair union, clipped to this letter), so the
-      // orange-yellow keeps the rounded bevel and shows no seam at the i|s and U|p joins.
+      // parrot-green keeps the rounded bevel and shows no seam at the i|s and U|p joins.
       const tintG = svgEl('g', { opacity: 0, 'pointer-events': 'none' });
       const tintClip = svgEl('g', { 'clip-path': partner ? `url(#hero-fc-${ch})` : '' });
       if (!partner) tintClip.removeAttribute('clip-path');
@@ -281,7 +281,7 @@ export function heroType() {
         if (Math.abs(ndx - u.dx) + Math.abs(ndy - u.dy) > 0.0008) { u.dx = ndx; u.dy = ndy; setDepth(u); }
 
         // faint colour: strongest on the hovered letter, a little on its neighbours
-        const wantC = anyHover ? 1 : 0; // hovering any letter turns the whole word orange-yellow
+        const wantC = anyHover ? 1 : 0; // hovering any letter turns the whole word parrot-green
         u.color += (wantC - u.color) * (1 - Math.exp(-dt * 9));
         const o = u.color < 0.01 ? 0 : u.color;
         u.letters.forEach((c) => tints[c].setAttribute('opacity', o.toFixed(3)));
